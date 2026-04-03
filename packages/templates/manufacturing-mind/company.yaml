@@ -1,0 +1,106 @@
+name: Manufacturing Mind
+version: 1.0.0
+description: Production Intelligence - predictive maintenance, quality control, supplier risk, production scheduling, energy optimization
+icon: 🏭
+category: manufacturing
+
+agents:
+  - name: Predictive Maintenance Agent
+    role: maintenance_engineer
+    description: Sensor data analysis, failure prediction before breakdowns occur
+    skills:
+      - iot_data_processing
+      - failure_prediction
+      - maintenance_scheduling
+      - downtime_prevention
+    triggers:
+      - schedule: "*/5 * * * *"
+      - event: sensor_anomaly_detected
+    config:
+      prediction_horizon_hours: 72
+      confidence_threshold: 0.8
+      maintenance_window_hours: 4
+
+  - name: Quality Control Agent
+    role: quality_engineer
+    description: Computer vision inspection, defect detection, batch analysis
+    skills:
+      - computer_vision
+      - defect_detection
+      - batch_tracking
+      - root_cause_analysis
+    triggers:
+      - event: production_batch_complete
+      - schedule: "0 */4 * * *"
+    config:
+      inspection_points_per_unit: 12
+      defect_alert_threshold: 0.02
+      auto_reject_severity: critical
+
+  - name: Supplier Risk Agent
+    role: supply_chain_manager
+    description: Monitors supplier risks, suggests alternatives, lead time optimization
+    skills:
+      - supplier_monitoring
+      - risk_assessment
+      - alternative_sourcing
+      - lead_time_analysis
+    triggers:
+      - schedule: "0 8 * * *"
+      - event: supplier_alert_received
+    config:
+      risk_monitoring_sources: [financial, geopolitical, weather]
+      alternative_supplier_count: 3
+      safety_stock_multiplier: 1.5
+
+  - name: Production Scheduler Agent
+    role: operations_manager
+    description: Optimizes production sequence, minimizes changeover, maximizes throughput
+    skills:
+      - production_scheduling
+      - changeover_optimization
+      - capacity_planning
+      - bottleneck_detection
+    triggers:
+      - schedule: "0 6 * * *"
+      - event: order_received
+    config:
+      optimization_horizon_days: 7
+      changeover_cost_weight: 0.3
+      priority_flexibility: medium
+
+  - name: Energy Optimizer Agent
+    role: sustainability_engineer
+    description: Reduces energy consumption on production lines, peak shaving
+    skills:
+      - energy_monitoring
+      - consumption_optimization
+      - peak_shaving
+      - carbon_tracking
+    triggers:
+      - schedule: "*/15 * * * *"
+      - event: energy_spike_detected
+    config:
+      optimization_frequency: 15
+      peak_demand_threshold_kw: 500
+      savings_target_percent: 15
+
+integrations:
+  - siemens_mindsphere
+  - ge_predix
+  - sap_mes
+  - oracle_mfg
+  - prometheus
+  - grafana
+
+metrics:
+  - oee_improvement_percent
+  - unplanned_downtime_reduction
+  - defect_rate_reduction
+  - supplier_risk_mitigation
+  - energy_savings_percent
+
+cost_estimate:
+  monthly_compute: "$400-800"
+  api_costs: "$500-1000"
+  expected_roi: "OEE +20%, fewer breakdowns, lower energy costs"

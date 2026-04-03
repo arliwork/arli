@@ -1,0 +1,108 @@
+name: Agency Scalr
+version: 1.0.0
+description: Marketing Agency Automation - campaign architecture, creative testing, performance reporting, client communication, upsell detection
+icon: 📈
+category: marketing
+
+agents:
+  - name: Campaign Architect Agent
+    role: media_planner
+    description: Generates media plans based on goals and budget, channel mix optimization
+    skills:
+      - media_planning
+      - budget_allocation
+      - channel_mix_optimization
+      - audience_targeting
+    triggers:
+      - event: new_client_onboarded
+      - schedule: "0 9 1 * *"
+    config:
+      channels: [google, meta, linkedin, tiktok, programmatic]
+      goal_types: [awareness, consideration, conversion]
+      budget_minimum: 5000
+
+  - name: Creative Testing Agent
+    role: creative_strategist
+    description: A/B test concepts quickly without design teams, creative performance prediction
+    skills:
+      - creative_generation
+      - a_b_testing
+      - performance_prediction
+      - asset_optimization
+    triggers:
+      - schedule: "0 10 * * 1"
+      - event: creative_fatigue_detected
+    config:
+      test_duration_days: 7
+      concepts_per_test: 5
+      fatigue_threshold_ctr: 0.01
+
+  - name: Performance Reporter Agent
+    role: analytics_specialist
+    description: Automated dashboards, anomaly detection, insight generation
+    skills:
+      - dashboard_automation
+      - anomaly_detection
+      - insight_generation
+      - client_reporting
+    triggers:
+      - schedule: "0 8 * * *"
+      - event: metric_anomaly_detected
+    config:
+      dashboard_update_frequency: hourly
+      anomaly_sensitivity: medium
+      report_depth: actionable
+
+  - name: Client Communication Agent
+    role: account_manager
+    description: Proactive updates, Q&A, satisfaction monitoring, meeting prep
+    skills:
+      - client_communication
+      - update_automation
+      - satisfaction_monitoring
+      - meeting_preparation
+    triggers:
+      - schedule: "0 14 * * *"
+      - event: client_question_received
+    config:
+      proactive_update_frequency: weekly
+      response_time_target: 60
+      satisfaction_check_frequency: monthly
+
+  - name: Opportunity Spotter Agent
+    role: business_development
+    description: Finds gaps in client accounts for upsell, expansion opportunities
+    skills:
+      - account_analysis
+      - upsell_opportunity_detection
+      - service_gap_identification
+      - proposal_generation
+    triggers:
+      - schedule: "0 9 * * 1"
+      - event: client_usage_spike
+    config:
+      opportunity_score_threshold: 70
+      service_gaps_check: true
+      competitive_threat_monitoring: true
+
+integrations:
+  - google_ads
+  - meta_ads
+  - linkedin_ads
+  - tiktok_ads
+  - hubspot
+  - salesforce
+  - slack
+  - asana
+
+metrics:
+  - accounts_per_manager
+  - client_retention_rate
+  - upsell_revenue
+  - campaign_performance_lift
+  - client_satisfaction_score
+
+cost_estimate:
+  monthly_compute: "$250-450"
+  api_costs: "$400-700"
+  expected_roi: "1 AM manages 2-3x more clients with better results"

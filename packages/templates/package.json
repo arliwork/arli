@@ -1,0 +1,40 @@
+{
+  "name": "@arli/templates",
+  "version": "1.0.0",
+  "description": "Production-ready AI company templates for ARLI platform",
+  "main": "index.js",
+  "files": [
+    "*/",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "echo \"Tests not implemented yet\""
+  },
+  "keywords": [
+    "arli",
+    "ai-agents",
+    "templates",
+    "automation",
+    "saas",
+    "ecommerce",
+    "healthcare",
+    "legal",
+    "accounting",
+    "education",
+    "hospitality",
+    "manufacturing",
+    "realestate",
+    "marketing"
+  ],
+  "author": "ARLI Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arliwork/arli.git",
+    "directory": "packages/templates"
+  },
+  "bugs": {
+    "url": "https://github.com/arliwork/arli/issues"
+  },
+  "homepage": "https://arli.work"
+}

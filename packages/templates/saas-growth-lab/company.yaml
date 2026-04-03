@@ -1,0 +1,110 @@
+name: SaaS Growth Lab
+version: 1.0.0
+description: Subscription Business Intelligence - churn prediction, expansion scouting, onboarding acceleration, usage analytics
+icon: 🚀
+category: saas
+
+agents:
+  - name: Churn Prediction Agent
+    role: retention_manager
+    description: Identifies at-risk accounts before cancellation, proactive interventions
+    skills:
+      - churn_modeling
+      - behavior_analysis
+      - intervention_suggestions
+      - winback_campaigns
+    triggers:
+      - schedule: "0 9 * * *"
+      - event: health_score_drop
+    config:
+      prediction_horizon_days: 30
+      risk_threshold: 0.75
+      intervention_types: [email, call, success_offer]
+
+  - name: Expansion Scout Agent
+    role: growth_manager
+    description: Finds upsell/cross-sell signals in usage data, expansion plays
+    skills:
+      - usage_analytics
+      - expansion_opportunity_detection
+      - pricing_optimization
+      - upgrade_campaigns
+    triggers:
+      - schedule: "0 10 * * 1"
+      - event: usage_threshold_exceeded
+    config:
+      opportunity_score_threshold: 70
+      expansion_signals:
+        - feature_adoption_spike
+        - team_growth
+        - api_usage_increase
+
+  - name: Onboarding Accelerator Agent
+    role: customer_success
+    description: Personalized paths to first value faster, milestone tracking
+    skills:
+      - onboarding_automation
+      - milestone_tracking
+      - personalization_engine
+      - time_to_value_optimizer
+    triggers:
+      - event: new_account_created
+      - schedule: "0 11 * * *"
+    config:
+      first_value_target_hours: 24
+      milestone_count: 5
+      intervention_triggers: [stuck, skipped, delayed]
+
+  - name: Usage-to-Value Translator Agent
+    role: value_consultant
+    description: Shows ROI to customer automatically, business case generation
+    skills:
+      - roi_calculation
+      - value_reporting
+      - business_case_generation
+      - customer_communication
+    triggers:
+      - schedule: "0 9 1 * *"
+      - event: quarterly_business_review
+    config:
+      value_metrics: [time_saved, revenue_impact, cost_reduction]
+      report_frequency: monthly
+      customization_level: high
+
+  - name: Feedback Synthesizer Agent
+    role: voice_of_customer
+    description: Collects insights from support tickets, calls, NPS, feature requests
+    skills:
+      - feedback_aggregation
+      - sentiment_analysis
+      - theme_extraction
+      - product_insight_generation
+    triggers:
+      - schedule: "0 8 * * 1"
+      - event: support_ticket_escalated
+    config:
+      feedback_sources: [support, calls, nps, reviews]
+      insight_categories: [product, pricing, competitors, churn_reasons]
+      synthesis_frequency: weekly
+
+integrations:
+  - stripe
+  - chargebee
+  - recurly
+  - mixpanel
+  - amplitude
+  - segment
+  - zendesk
+  - intercom
+
+metrics:
+  - net_revenue_retention
+  - churn_rate_reduction
+  - expansion_revenue_growth
+  - time_to_first_value
+  - product_adoption_rate
+
+cost_estimate:
+  monthly_compute: "$200-400"
+  api_costs: "$300-600"
+  expected_roi: "NRR >120%, lower CAC payback"

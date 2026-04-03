@@ -1,0 +1,107 @@
+name: Clinic Flow
+version: 1.0.0
+description: Healthcare Operations Automation - predictive scheduling, patient intake, automated follow-up, billing reconciliation
+icon: 🏥
+category: healthcare
+
+agents:
+  - name: Schedule Optimizer Agent
+    role: scheduling_engine
+    description: Predictive scheduling with no-show risk consideration, overbooking strategy
+    skills:
+      - appointment_scheduling
+      - no_show_prediction
+      - waitlist_management
+      - provider_utilization
+    triggers:
+      - event: appointment_booked
+      - schedule: "0 18 * * *"
+    config:
+      no_show_threshold: 0.25
+      overbooking_strategy: conservative
+      buffer_time_minutes: 15
+
+  - name: Pre-visit Agent
+    role: intake_coordinator
+    description: Collects medical history, fills forms before visit, verifies insurance
+    skills:
+      - form_automation
+      - insurance_verification
+      - history_collection
+      - appointment_prep
+    triggers:
+      - event: appointment_24h_before
+      - schedule: "0 9 * * *"
+    config:
+      forms_required:
+        - medical_history
+        - insurance_card
+        - consent_forms
+      reminder_frequency: 24
+
+  - name: Follow-up Care Agent
+    role: care_coordinator
+    description: Automated check-ups, medication reminders, care plan adherence
+    skills:
+      - patient_communication
+      - medication_tracking
+      - care_plan_monitoring
+      - outcome_surveys
+    triggers:
+      - event: visit_completed
+      - schedule: "0 10 * * *"
+    config:
+      follow_up_days: [1, 7, 30, 90]
+      medication_reminders: true
+      adherence_tracking: true
+
+  - name: Billing Reconciliation Agent
+    role: revenue_cycle_manager
+    description: Checks claims, catches denied claims for appeal, coding verification
+    skills:
+      - claims_processing
+      - denial_management
+      - coding_validation
+      - payment_posting
+    triggers:
+      - schedule: "0 */12 * * *"
+      - event: claim_denied
+    config:
+      auto_appeal_eligible: true
+      denial_analysis_depth: detailed
+      coding_accuracy_threshold: 0.95
+
+  - name: Compliance Auditor Agent
+    role: compliance_officer
+    description: HIPAA checks, documentation gaps, audit trail maintenance
+    skills:
+      - hipaa_monitoring
+      - documentation_audit
+      - access_log_review
+      - policy_compliance
+    triggers:
+      - schedule: "0 2 * * 0"
+      - event: suspicious_access_detected
+    config:
+      audit_frequency: weekly
+      documentation_compliance_threshold: 0.98
+
+integrations:
+  - epic
+  - cerner
+  - athenahealth
+  - advancedmd
+  - drchrono
+  - square_health
+
+metrics:
+  - no_show_reduction_percent
+  - patient_throughput_increase
+  - claim_approval_rate
+  - days_in_accounts_receivable
+  - patient_satisfaction_score
+
+cost_estimate:
+  monthly_compute: "$200-400"
+  api_costs: "$300-600"
+  expected_roi: "25% throughput increase without new doctors"

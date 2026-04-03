@@ -1,0 +1,107 @@
+name: Legal Synth
+version: 1.0.0
+description: Law Firm Automation - contract review, legal research, discovery processing, client intake, billing intelligence
+icon: ⚖️
+category: legal
+
+agents:
+  - name: Document Review Agent
+    role: contract_analyst
+    description: Primary contract analysis, risk highlighting, clause extraction
+    skills:
+      - contract_parsing
+      - risk_identification
+      - clause_extraction
+      - comparison_analysis
+    triggers:
+      - event: document_uploaded
+      - schedule: "0 */4 * * *"
+    config:
+      review_depth: standard
+      risk_levels: [critical, high, medium, low]
+      turnaround_hours: 24
+
+  - name: Research Assistant Agent
+    role: legal_researcher
+    description: Case law search, synthesis for briefs, precedent analysis
+    skills:
+      - case_law_search
+      - legal_synthesis
+      - citation_checking
+      - brief_generation
+    triggers:
+      - event: research_request_created
+      - schedule: "0 7 * * *"
+    config:
+      jurisdictions: [federal, state_local]
+      date_range_years: 10
+      citation_format: bluebook
+
+  - name: Discovery Miner Agent
+    role: ediscovery_specialist
+    description: Processing terabytes of documents for litigation, privilege detection
+    skills:
+      - document_processing
+      - privilege_detection
+      - pii_redaction
+      - predictive_coding
+    triggers:
+      - event: discovery_request_received
+    config:
+      processing_speed_docs_per_hour: 10000
+      privilege_review: true
+      pii_detection: true
+
+  - name: Client Intake Agent
+    role: intake_coordinator
+    description: Automatic case qualification, conflict check, initial assessment
+    skills:
+      - intake_automation
+      - conflict_checking
+      - case_assessment
+      - engagement_letter_gen
+    triggers:
+      - event: new_inquiry_received
+    config:
+      qualification_criteria:
+        - jurisdiction_match
+        - statute_of_limitations
+        - fee_structure_fit
+      conflict_check_depth: thorough
+
+  - name: Billing Intelligence Agent
+    role: time_capture_specialist
+    description: Captures billable time from all activities, narratives, compliance
+    skills:
+      - time_tracking
+      - activity_capture
+      - narrative_generation
+      - billing_compliance
+    triggers:
+      - schedule: "0 */2 * * *"
+      - event: activity_completed
+    config:
+      capture_email_time: true
+      capture_call_time: true
+      capture_research_time: true
+      minimum_billable_increment: 0.1
+
+integrations:
+  - clio
+  - mycase
+  - practice_panther
+  - lexisnexis
+  - westlaw
+  - documate
+
+metrics:
+  - contract_review_speedup
+  - research_time_reduction
+  - discovery_cost_savings
+  - intake_conversion_rate
+  - billing_capture_improvement
+
+cost_estimate:
+  monthly_compute: "$300-500"
+  api_costs: "$500-1000"
+  expected_roi: "Senior lawyers focus on strategy, not routine"

@@ -1,0 +1,103 @@
+name: Commerce Intel
+version: 1.0.0
+description: E-commerce Intelligence Platform - automated pricing, demand forecasting, inventory optimization, and competitive analysis
+icon: 🛒
+category: retail
+
+agents:
+  - name: Price War Room Agent
+    role: pricing_strategist
+    description: Monitors competitor prices 24/7, alerts on price drops, suggests dynamic pricing strategies
+    skills:
+      - web_scraping
+      - price_monitoring
+      - alert_generation
+      - competitor_analysis
+    triggers:
+      - schedule: "*/15 * * * *"
+      - event: price_drop_detected
+    config:
+      monitoring_interval: 900
+      price_change_threshold: 0.05
+      competitors_per_product: 5
+
+  - name: Demand Oracle Agent
+    role: demand_forecaster
+    description: Predicts demand based on seasonality, trends, weather, and external factors
+    skills:
+      - time_series_analysis
+      - trend_detection
+      - weather_api_integration
+      - social_listening
+    triggers:
+      - schedule: "0 6 * * *"
+      - event: new_product_added
+    config:
+      forecast_horizon_days: 90
+      seasonality_window: 365
+      confidence_threshold: 0.75
+
+  - name: Inventory Optimizer Agent
+    role: inventory_manager
+    description: Calculates reorder points, prevents stockouts, manages safety stock
+    skills:
+      - inventory_calculation
+      - supplier_integration
+      - lead_time_analysis
+      - stock_alerting
+    triggers:
+      - schedule: "0 */4 * * *"
+      - event: stock_level_change
+    config:
+      service_level_target: 0.95
+      review_period_days: 7
+
+  - name: Review Miner Agent
+    role: sentiment_analyst
+    description: Analyzes negative reviews, finds pattern problems, suggests product improvements
+    skills:
+      - sentiment_analysis
+      - nlp_processing
+      - review_aggregation
+      - insight_generation
+    triggers:
+      - schedule: "0 */6 * * *"
+      - event: new_review_posted
+    config:
+      sentiment_threshold: -0.3
+      min_reviews_for_analysis: 10
+
+  - name: Ad Spend Optimizer Agent
+    role: performance_marketer
+    description: Redistributes budget between channels based on real-time ROAS
+    skills:
+      - campaign_analytics
+      - budget_allocation
+      - a_b_testing
+      - attribution_modeling
+    triggers:
+      - schedule: "0 */2 * * *"
+      - event: roas_threshold_breach
+    config:
+      min_roas_threshold: 2.0
+      reallocation_aggressiveness: 0.2
+
+integrations:
+  - shopify
+  - woocommerce
+  - amazon_sp_api
+  - google_ads
+  - meta_ads
+  - klaviyo
+
+metrics:
+  - margin_recovery_percent
+  - stockout_reduction_percent
+  - forecast_accuracy
+  - competitor_price_match_rate
+  - ad_roas_improvement
+
+cost_estimate:
+  monthly_compute: "$150-300"
+  api_costs: "$200-500"
+  expected_roi: "5-15% margin improvement"

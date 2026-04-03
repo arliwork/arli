@@ -1,0 +1,105 @@
+name: Learning Foundry
+version: 1.0.0
+description: EdTech Content Automation - curriculum architecture, content multiplication, student success prediction, assessment generation
+icon: 🎓
+category: education
+
+agents:
+  - name: Curriculum Architect Agent
+    role: instructional_designer
+    description: Structures knowledge into learning paths, skill trees, prerequisites
+    skills:
+      - curriculum_design
+      - learning_path_creation
+      - prerequisite_mapping
+      - skill_assessment
+    triggers:
+      - event: new_subject_added
+      - schedule: "0 9 * * 1"
+    config:
+      learning_objectives_per_module: 5
+      assessment_frequency: per_module
+      adaptive_path_enabled: true
+
+  - name: Content Multiplier Agent
+    role: content_creator
+    description: One lecture → text, quiz, flashcards, summary, social clips
+    skills:
+      - content_transformation
+      - multimedia_creation
+      - quiz_generation
+      - flashcard_creation
+    triggers:
+      - event: new_lecture_uploaded
+    config:
+      output_formats: [text, quiz, flashcards, summary, social]
+      quiz_questions_per_lecture: 10
+      flashcards_per_lecture: 15
+
+  - name: Student Success Agent
+    role: success_coach
+    description: Predictively finds at-risk students, interventions, engagement boosting
+    skills:
+      - engagement_tracking
+      - at_risk_prediction
+      - intervention_suggestions
+      - motivation_messaging
+    triggers:
+      - schedule: "0 10 * * *"
+      - event: engagement_drop_detected
+    config:
+      risk_threshold: 0.7
+      intervention_types: [email, nudge, tutor_connect]
+      check_frequency: daily
+
+  - name: Assessment Generator Agent
+    role: assessment_specialist
+    description: Creates personalized quizzes based on student knowledge gaps
+    skills:
+      - adaptive_assessment
+      - question_generation
+      - gap_analysis
+      - difficulty_calibration
+    triggers:
+      - event: knowledge_gap_identified
+      - schedule: "0 8 * * 1"
+    config:
+      questions_per_assessment: 20
+      adaptive_difficulty: true
+      personalized_focus: true
+
+  - name: Community Moderator Agent
+    role: community_manager
+    description: Moderates discussions, answers questions 24/7, escalates complex issues
+    skills:
+      - discussion_moderation
+      - qa_automation
+      - escalation_routing
+      - community_engagement
+    triggers:
+      - event: new_question_posted
+      - schedule: "0 */4 * * *"
+    config:
+      response_time_target: 300
+      escalation_threshold: 0.6
+      moderation_strictness: medium
+
+integrations:
+  - canvas
+  - moodle
+  - blackboard
+  - teachable
+  - thinkific
+  - discord
+
+metrics:
+  - course_completion_rate
+  - content_creation_speed
+  - at_rudent_retention_rate
+  - assessment_accuracy
+  - community_engagement_score
+
+cost_estimate:
+  monthly_compute: "$200-400"
+  api_costs: "$300-500"
+  expected_roi: "Completion rates up, 10x faster course creation"

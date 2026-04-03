@@ -1,0 +1,106 @@
+name: Property Pulse
+version: 1.0.0
+description: Real Estate Automation Platform - lead scoring, market intelligence, automated follow-up, and deal management
+icon: 🏠
+category: real_estate
+
+agents:
+  - name: Lead Scorer Agent
+    role: lead_qualifier
+    description: Qualifies leads by intent, budget, timeline, engagement history
+    skills:
+      - lead_scoring
+      - behavior_analysis
+      - intent_detection
+      - crm_integration
+    triggers:
+      - event: new_lead_created
+      - schedule: "0 */6 * * *"
+    config:
+      hot_lead_threshold: 80
+      qualification_criteria:
+        - budget_verified
+        - timeline_3months
+        - financing_preapproved
+
+  - name: Market Intel Agent
+    role: market_analyst
+    description: Generates automated CMAs, tracks neighborhood trends, pricing strategy
+    skills:
+      - mls_integration
+      - price_analysis
+      - trend_forecasting
+      - report_generation
+    triggers:
+      - event: new_listing_request
+      - schedule: "0 8 * * 1"
+    config:
+      comp_radius_miles: 1.0
+      days_on_market_weight: 0.3
+      price_per_sqft_analysis: true
+
+  - name: Nurture Sequence Agent
+    role: relationship_manager
+    description: Personalized follow-up for months without manual work
+    skills:
+      - email_automation
+      - content_personalization
+      - sequence_management
+      - engagement_tracking
+    triggers:
+      - event: lead_status_change
+      - schedule: "0 10 * * *"
+    config:
+      nurture_duration_days: 180
+      touchpoints_per_week: 2
+      personalization_depth: high
+
+  - name: Document Pilot Agent
+    role: transaction_coordinator
+    description: Collects deal documents, tracks deadlines, manages checklist
+    skills:
+      - document_management
+      - deadline_tracking
+      - checklist_automation
+      - reminder_system
+    triggers:
+      - event: deal_stage_change
+      - schedule: "0 9 * * *"
+    config:
+      days_before_deadline_alert: 3
+      auto_reminder_frequency: 48
+
+  - name: Listing Optimizer Agent
+    role: listing_specialist
+    description: AI photos, descriptions, pricing strategy per market
+    skills:
+      - image_enhancement
+      - copywriting
+      - pricing_optimization
+      - seo_optimization
+    triggers:
+      - event: new_listing_created
+    config:
+      photo_enhancement: true
+      virtual_staging: true
+      description_tone: professional
+
+integrations:
+  - mls
+  - zillow
+  - realtor_com
+  - followup_boss
+  - liondesk
+  - bombbomb
+
+metrics:
+  - lead_conversion_rate
+  - days_on_market_reduction
+  - price_to_list_ratio
+  - agent_productivity_index
+  - client_satisfaction_score
+
+cost_estimate:
+  monthly_compute: "$120-250"
+  api_costs: "$150-400"
+  expected_roi: "3x more leads processed per agent"

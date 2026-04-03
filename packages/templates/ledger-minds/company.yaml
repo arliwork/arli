@@ -1,0 +1,106 @@
+name: Ledger Minds
+version: 1.0.0
+description: Accounting & Advisory Automation - transaction categorization, anomaly detection, forecasting, client reporting, tax optimization
+icon: 📊
+category: accounting
+
+agents:
+  - name: Transaction Categorizer Agent
+    role: bookkeeper
+    description: Auto-classify transactions, learn from corrections, bank reconciliation
+    skills:
+      - transaction_categorization
+      - bank_reconciliation
+      - machine_learning
+      - rule_automation
+    triggers:
+      - schedule: "0 */6 * * *"
+      - event: new_transactions_imported
+    config:
+      auto_categorization_threshold: 0.85
+      learn_from_corrections: true
+      reconciliation_frequency: daily
+
+  - name: Anomaly Hunter Agent
+    role: forensic_analyst
+    description: Finds suspicious patterns, duplicates, fraud signals
+    skills:
+      - pattern_detection
+      - fraud_identification
+      - duplicate_detection
+      - variance_analysis
+    triggers:
+      - schedule: "0 8 * * *"
+      - event: large_transaction_detected
+    config:
+      anomaly_sensitivity: high
+      investigation_threshold: 1000
+      alert_channels: [email, dashboard]
+
+  - name: Forecast Builder Agent
+    role: fp_analyst
+    description: Rolling forecasts based on real-time data, scenario modeling
+    skills:
+      - financial_modeling
+      - cash_flow_forecasting
+      - scenario_analysis
+      - variance_tracking
+    triggers:
+      - schedule: "0 6 1 * *"
+      - event: month_end_close
+    config:
+      forecast_horizon_months: 12
+      scenario_count: 3
+      variance_threshold_percent: 10
+
+  - name: Client Dashboard Agent
+    role: client_success
+    description: Automatic reports for clients without manual work, KPI visualization
+    skills:
+      - report_generation
+      - dashboard_creation
+      - kpi_tracking
+      - client_communication
+    triggers:
+      - schedule: "0 9 1 * *"
+      - event: client_request_received
+    config:
+      report_frequency: monthly
+      kpi_count: 10
+      customization_level: high
+
+  - name: Tax Optimizer Agent
+    role: tax_advisor
+    description: Year-round tax planning, not April rush, deduction optimization
+    skills:
+      - tax_planning
+      - deduction_optimization
+      - entity_structure
+      - deadline_management
+    triggers:
+      - schedule: "0 10 15 * *"
+      - event: financial_event_detected
+    config:
+      planning_frequency: quarterly
+      deduction_tracking: continuous
+      entity_review_annual: true
+
+integrations:
+  - quickbooks
+  - xero
+  - sage
+  - freshbooks
+  - bill_com
+  - gusto
+
+metrics:
+  - categorization_accuracy
+  - fraud_detection_rate
+  - forecast_accuracy
+  - client_report_delivery_time
+  - tax_savings_identified
+
+cost_estimate:
+  monthly_compute: "$150-300"
+  api_costs: "$200-400"
+  expected_roi: "Advisory revenue grows, compliance work automated"

@@ -1,0 +1,106 @@
+name: Hospitality Hive
+version: 1.0.0
+description: Restaurant & Hotel Operations - labor optimization, demand forecasting, reputation management, yield optimization
+icon: 🏨
+category: hospitality
+
+agents:
+  - name: Labor Optimizer Agent
+    role: workforce_manager
+    description: Predicts busy periods, builds optimal schedules, reduces overstaffing
+    skills:
+      - demand_forecasting
+      - schedule_optimization
+      - labor_cost_control
+      - shift_management
+    triggers:
+      - schedule: "0 15 * * 5"
+      - event: event_added_to_calendar
+    config:
+      forecast_horizon_days: 14
+      labor_cost_target_percent: 25
+      min_staffing_ratio: 0.7
+
+  - name: Supply Chain Agent
+    role: procurement_manager
+    description: Predictive purchasing, spoilage minimization, vendor management
+    skills:
+      - inventory_forecasting
+      - order_automation
+      - vendor_comparison
+      - spoilage_tracking
+    triggers:
+      - schedule: "0 8 * * *"
+      - event: inventory_threshold_reached
+    config:
+      safety_stock_days: 2
+      order_lead_time_days: 1
+      spoilage_target_percent: 3
+
+  - name: Reputation Manager Agent
+    role: pr_specialist
+    description: Responds to reviews, finds actionable feedback, brand monitoring
+    skills:
+      - review_monitoring
+      - response_generation
+      - sentiment_analysis
+      - trend_identification
+    triggers:
+      - event: new_review_posted
+      - schedule: "0 */6 * * *"
+    config:
+      response_time_target: 120
+      sentiment_alert_threshold: -0.5
+      platforms: [google, yelp, tripadvisor, opentable]
+
+  - name: Yield Manager Agent
+    role: revenue_manager
+    description: Dynamic pricing for rooms/tables based on occupancy and demand
+    skills:
+      - revenue_optimization
+      - dynamic_pricing
+      - demand_segmentation
+      - competitor_monitoring
+    triggers:
+      - schedule: "0 */2 * * *"
+      - event: occupancy_threshold_reached
+    config:
+      pricing_update_frequency: 120
+      min_occupancy_threshold: 0.6
+      max_discount_percent: 20
+
+  - name: Recipe Costing Agent
+    role: food_cost_analyst
+    description: Precise food cost per dish, margin analysis, menu engineering
+    skills:
+      - recipe_costing
+      - margin_analysis
+      - menu_engineering
+      - price_optimization
+    triggers:
+      - schedule: "0 9 1 * *"
+      - event: ingredient_price_change
+    config:
+      target_food_cost_percent: 28
+      menu_analysis_frequency: monthly
+      recipe_accuracy: ingredient_level
+
+integrations:
+  - toast
+  - square
+  - resy
+  - opentable
+  - sevenrooms
+  - siteminder
+
+metrics:
+  - labor_cost_reduction_percent
+  - spoilage_reduction_percent
+  - review_response_time
+  - occupancy_rate_improvement
+  - food_cost_accuracy
+
+cost_estimate:
+  monthly_compute: "$150-300"
+  api_costs: "$200-400"
+  expected_roi: "Labor cost -15%, occupancy +10%, less waste"
