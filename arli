@@ -1,0 +1,197 @@
+#!/bin/bash
+# ARLI CLI - Command your autonomous company
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMPANY_NAME="DevStudio One"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+show_header() {
+    clear
+    echo -e "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║${NC}           🏢 ${YELLOW}ARLI - Autonomous Company${NC}                 ${BLUE}║${NC}"
+    echo -e "${BLUE}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "Company: ${GREEN}$COMPANY_NAME${NC}"
+    echo ""
+}
+
+show_status() {
+    show_header
+    echo -e "${YELLOW}📊 Company Status${NC}"
+    echo "────────────────────────────────────────────────────────────"
+    
+    if [ -f "$SCRIPT_DIR/orchestrator.py" ]; then
+        python3 "$SCRIPT_DIR/orchestrator.py" status 2>/dev/null || echo "Orchestrator not running"
+    else
+        echo "Orchestrator not initialized"
+    fi
+    
+    echo ""
+    echo "Press Enter to continue..."
+    read
+}
+
+list_agents() {
+    show_header
+    echo -e "${YELLOW}🤖 Active Agents${NC}"
+    echo "────────────────────────────────────────────────────────────"
+    echo ""
+    
+    if [ -f "$SCRIPT_DIR/.arli/config.yaml" ]; then
+        echo "CEO              - Strategy & Planning"
+        echo "architect        - System Architecture"
+        echo "backend-dev      - API & Database Development"
+        echo "frontend-dev     - UI/UX Development"
+        echo "devops           - Deployment & Infrastructure"
+    else
+        echo "No agents configured"
+    fi
+    
+    echo ""
+    echo "Press Enter to continue..."
+    read
+}
+
+create_task() {
+    show_header
+    echo -e "${YELLOW}📝 Create New Task${NC}"
+    echo "────────────────────────────────────────────────────────────"
+    echo ""
+    
+    read -p "Task title: " title
+    read -p "Description: " description
+    read -p "Required capabilities (comma-separated): " caps
+    read -p "Priority (low/normal/high/urgent) [normal]: " priority
+    priority=${priority:-normal}
+    
+    if [ -n "$title" ] && [ -n "$description" ]; then
+        python3 "$SCRIPT_DIR/orchestrator.py" create-task "$title" "$description" "$caps" "$priority"
+        echo ""
+        echo -e "${GREEN}✅ Task created successfully!${NC}"
+    else
+        echo -e "${RED}❌ Title and description are required${NC}"
+    fi
+    
+    echo ""
+    echo "Press Enter to continue..."
+    read
+}
+
+view_tasks() {
+    show_header
+    echo -e "${YELLOW}📋 Task Board${NC}"
+    echo "────────────────────────────────────────────────────────────"
+    echo ""
+    
+    echo -e "${BLUE}Pending:${NC}"
+    ls -1 "$SCRIPT_DIR/tasks/pending/" 2>/dev/null | while read f; do
+        echo "  • $f"
+    done
+    
+    echo ""
+    echo -e "${YELLOW}In Progress:${NC}"
+    ls -1 "$SCRIPT_DIR/tasks/in-progress/" 2>/dev/null | while read f; do
+        echo "  • $f"
+    done
+    
+    echo ""
+    echo -e "${GREEN}Completed:${NC}"
+    ls -1 "$SCRIPT_DIR/tasks/completed/" 2>/dev/null | head -5 | while read f; do
+        echo "  ✓ $f"
+    done
+    
+    echo ""
+    echo "Press Enter to continue..."
+    read
+}
+
+start_orchestrator() {
+    show_header
+    echo -e "${YELLOW}🚀 Starting Orchestrator...${NC}"
+    echo ""
+    
+    # Check if already running
+    if pgrep -f "orchestrator.py run" > /dev/null; then
+        echo -e "${YELLOW}⚠️  Orchestrator is already running${NC}"
+    else
+        cd "$SCRIPT_DIR"
+        nohup python3 orchestrator.py run > ./logs/orchestrator-daemon.log 2>&1 &
+        sleep 2
+        echo -e "${GREEN}✅ Orchestrator started in background${NC}"
+        echo "Logs: ./logs/orchestrator-daemon.log"
+    fi
+    
+    echo ""
+    echo "Press Enter to continue..."
+    read
+}
+
+stop_orchestrator() {
+    show_header
+    echo -e "${YELLOW}🛑 Stopping Orchestrator...${NC}"
+    echo ""
+    
+    pkill -f "orchestrator.py run" 2>/dev/null
+    echo -e "${GREEN}✅ Orchestrator stopped${NC}"
+    
+    echo ""
+    echo "Press Enter to continue..."
+    read
+}
+
+show_logs() {
+    show_header
+    echo -e "${YELLOW}📜 Recent Logs${NC}"
+    echo "────────────────────────────────────────────────────────────"
+    echo ""
+    
+    if [ -f "$SCRIPT_DIR/logs/orchestrator.log" ]; then
+        tail -20 "$SCRIPT_DIR/logs/orchestrator.log"
+    else
+        echo "No logs found"
+    fi
+    
+    echo ""
+    echo "Press Enter to continue..."
+    read
+}
+
+# Main menu
+while true; do
+    show_header
+    
+    echo -e "${YELLOW}Main Menu:${NC}"
+    echo ""
+    echo "  1. 📊 View Company Status"
+    echo "  2. 🤖 List Agents"
+    echo "  3. 📝 Create Task"
+    echo "  4. 📋 View Tasks"
+    echo "  5. 🚀 Start Orchestrator"
+    echo "  6. 🛑 Stop Orchestrator"
+    echo "  7. 📜 View Logs"
+    echo ""
+    echo "  0. Exit"
+    echo ""
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) show_status ;;
+        2) list_agents ;;
+        3) create_task ;;
+        4) view_tasks ;;
+        5) start_orchestrator ;;
+        6) stop_orchestrator ;;
+        7) show_logs ;;
+        0) exit 0 ;;
+        *) 
+            echo -e "${RED}Invalid option${NC}"
+            sleep 1
+            ;;
+    esac
+done

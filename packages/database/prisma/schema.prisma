@@ -1,3 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatar        String?
+  role          UserRole  @default(USER)
+  status        UserStatus @default(ACTIVE)
+  
+  // Relations
+  companies     Company[]
+  notifications Notification[]
+  sessions      Session[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  OWNER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// Sessions
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  token     String   @unique
+  expiresAt DateTime
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@map("sessions")
+}
+
+// Companies
+model Company {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  template    String?       // Template used
+  status      CompanyStatus @default(DRAFT)
+  
+  // Config
+  config      Json?         // Company configuration
+  settings    Json?         // Company settings
+  
+  // Relations
+  ownerId     String
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  agents      Agent[]
+  workflows   Workflow[]
+  integrations Integration[]
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([ownerId])
+  @@index([template])
+  @@map("companies")
+}
+
+enum CompanyStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+// Agents
+model Agent {
+  id          String     @id @default(cuid())
+  name        String
+  role        String
+  description String?
+  status      AgentStatus @default(INACTIVE)
+  
+  // Config
+  config      Json?      // Agent configuration
+  skills      Json?      // Agent skills
+  triggers    Json?      // Agent triggers
+  
+  // Relations
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([companyId])
+  @@map("agents")
+}
+
+enum AgentStatus {
+  INACTIVE
+  ACTIVE
+  ERROR
+  MAINTENANCE
+}
+
+// Workflows
+model Workflow {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      WorkflowStatus @default(DRAFT)
+  
+  // Config
+  config      Json?         // Workflow configuration
+  steps       Json?         // Workflow steps
+  
+  // Relations
+  companyId   String
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([companyId])
+  @@map("workflows")
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+// Tasks
+model Task {
+  id          String     @id @default(cuid())
+  type        String     // Task type
+  status      TaskStatus @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  
+  // Data
+  input       Json?      // Task input
+  output      Json?      // Task output
+  error       String?    // Error message
+  
+  // Relations
+  agentId     String
+  agent       Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([agentId])
+  @@index([status])
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Integrations
+model Integration {
+  id          String            @id @default(cuid())
+  name        String            // Integration name
+  type        String            // Integration type
+  status      IntegrationStatus @default(INACTIVE)
+  
+  // Config (encrypted in production)
+  config      Json?
+  credentials Json?
+  
+  // Relations
+  companyId   String
+  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([companyId])
+  @@map("integrations")
+}
+
+enum IntegrationStatus {
+  INACTIVE
+  CONNECTING
+  ACTIVE
+  ERROR
+  DISCONNECTED
+}
 
 // Notifications
 model Notification {

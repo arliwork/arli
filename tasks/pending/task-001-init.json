@@ -1,0 +1,16 @@
+{
+  "id": "task-001-init",
+  "title": "Initialize ARLI Company Infrastructure",
+  "description": "Set up the core infrastructure for the ARLI autonomous company. Create necessary directories, configuration files, and validate the environment.",
+  "required_capabilities": ["deployment", "ci-cd"],
+  "priority": "high",
+  "deliverables": [
+    "Create directory structure for company",
+    "Set up logging system",
+    "Validate all agent configurations",
+    "Create initial health check script"
+  ],
+  "status": "pending",
+  "created_at": "2026-04-04T22:00:00+00:00",
+  "created_by": "ceo"
+}

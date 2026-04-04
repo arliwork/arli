@@ -1,0 +1,18 @@
+{
+  "id": "task-002-real-feature",
+  "title": "Implement Agent Task Execution System",
+  "description": "Create a Python-based task execution system that allows agents to actually run commands, write files, and complete work. The system should integrate with Hermes and be able to execute real work.",
+  "required_capabilities": ["api-development", "system-design"],
+  "priority": "urgent",
+  "deliverables": [
+    "Create agent_runtime.py that can execute shell commands",
+    "Implement file write/read capabilities",
+    "Create task result reporting system",
+    "Add error handling and retry logic",
+    "Write tests for the runtime"
+  ],
+  "instructions": "This is the core of ARLI - the ability for agents to actually DO work. Create a robust Python module in agents/runtime.py that:\n\n1. Can execute shell commands safely\n2. Can read/write files\n3. Can report task progress\n4. Integrates with Hermes CLI\n5. Has proper logging\n\nThe runtime should be able to execute tasks like:\n- 'Create a new API endpoint' → writes actual code\n- 'Fix this bug' → modifies files\n- 'Deploy to production' → runs deployment commands\n\nMake it real, not mock.",
+  "status": "pending",
+  "created_at": "2026-04-04T22:05:00+00:00",
+  "created_by": "ceo"
+}
