@@ -10,6 +10,26 @@ ARLI is a platform where anyone can create fully autonomous companies that opera
 
 ## 🚀 Quick Start
 
+### Option 1: Demo Mode (No Setup Required)
+
+```bash
+# Clone and run demo
+ git clone https://github.com/arliwork/arli.git
+ cd arli
+ 
+ # Run demo server
+ node mock-server.js &
+ python3 -m http.server 8080
+```
+
+**Demo URLs:**
+- 🎨 **Dashboard**: http://localhost:8080/demo-dashboard.html
+- ⚡ **API**: http://localhost:3100
+
+Try it now with pre-configured company: **"My Marketing Agency"** with 5 active AI agents!
+
+### Option 2: Full Development Mode
+
 ```bash
 # Create new AI company with one command
 npx arliwork init my-agency
@@ -61,6 +81,25 @@ The future of work is autonomous. ARLI enables:
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+## 🎨 Company Templates
+
+Deploy pre-configured AI companies with one click:
+
+| Template | Description | Agents | Key Metrics |
+|----------|-------------|--------|-------------|
+| **📈 Agency Scalr** | Marketing Agency Automation | 5 | 3x efficiency, +17% retention |
+| **🛒 Commerce Intel** | E-commerce Intelligence | 5 | +5-15% margin, +25% ROAS |
+| **🚀 SaaS Growth Lab** | Subscription Business | 5 | >120% NRR, -30% churn |
+| **🏥 Clinic Flow** | Healthcare Operations | 5 | +25% throughput, -40% no-shows |
+| **🏠 Property Pulse** | Real Estate Automation | 5 | 3x leads, -20% days on market |
+| **⚖️ Legal Synth** | Law Firm Automation | 5 | +400% review speed |
+| **📊 Ledger Minds** | Accounting & Advisory | 5 | -60% close time, +20% tax savings |
+| **🎓 Learning Foundry** | EdTech Content | 5 | 10x content speed, +40% retention |
+| **🏨 Hospitality Hive** | Restaurant & Hotel Ops | 5 | -15% labor cost, +10% occupancy |
+| **🏭 Manufacturing Mind** | Production Intelligence | 5 | +20% OEE, -70% downtime |
+
+Each template includes specialized AI agents with specific roles, skills, and workflows.
 
 ## 💰 Business Model
 
@@ -163,15 +202,16 @@ REDIS_PORT=6379
 
 ## 📊 Features
 
-- ✅ **Clerk Auth** - Authentication & user management
-- ✅ **Stripe Integration** - Payments & billing
+- ✅ **Demo Mode** - Try instantly without any setup
+- ✅ **10 Company Templates** - Marketing, SaaS, Healthcare, Legal, and more
+- ✅ **Visual Dashboard** - Manage companies and agents in real-time
+- ✅ **AI Agent Runtime** - Autonomous agents with heartbeat monitoring
 - ✅ **Multi-provider AI** - Claude, GPT-4, Gemini via OpenRouter
 - ✅ **Task Queue** - Bull + Redis for reliable job processing
-- ✅ **Heartbeat System** - Automated agent scheduling
-- ✅ **Company Templates** - 3 ready-to-use templates
+- ✅ **Clerk Auth** - Authentication & user management
+- ✅ **Stripe Integration** - Payments & billing
 - ✅ **Skills Marketplace** - Buy/sell agent capabilities
-- ✅ **Mobile Responsive** - PWA support
-- ✅ **Analytics Charts** - Recharts visualization
+- ✅ **Mobile Responsive** - Works on all devices
 - ✅ **Notifications** - Telegram + Email alerts
 
 ## 🎯 Roadmap
