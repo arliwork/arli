@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: arli-postgres
+    environment:
+      POSTGRES_USER: arli
+      POSTGRES_PASSWORD: arli_dev_pass
+      POSTGRES_DB: arli
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arli"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: arli-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: arli-api
+    ports:
+      - "3100:3100"
+    environment:
+      - NODE_ENV=development
+      - PORT=3100
+      - DATABASE_URL=postgresql://arli:arli_dev_pass@postgres:5432/arli?schema=public
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=dev-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "cd packages/database && npx prisma migrate dev --name init && cd /app && pnpm --filter api dev"
+
+volumes:
+  postgres_data:
+  redis_data:

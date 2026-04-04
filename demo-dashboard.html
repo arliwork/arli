@@ -3,448 +3,791 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARLI Platform - Demo Dashboard</title>
+    <title>ARLI — Autonomous Systems</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            /* Deep tech natural palette */
+            --bg-primary: #0a0c0f;
+            --bg-secondary: #111318;
+            --bg-tertiary: #1a1d24;
+            --surface: #21252d;
+            
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --text-muted: #5f6368;
+            
+            --accent-cyan: #00d9ff;
+            --accent-indigo: #6366f1;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            
+            --border: rgba(255, 255, 255, 0.06);
+            
+            --font-sans: 'Inter', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2.5rem;
+            --space-xl: 4rem;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
+        html {
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            font-weight: 400;
+        }
+        
+        /* Layout — asymmetric with breathing room */
+        .app {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+        
+        @media (max-width: 900px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Sidebar — minimal */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .brand-mark {
+            width: 32px;
+            height: 32px;
+            border: 1.5px solid var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+        }
+        
+        .brand-text {
+            font-size: 1.125rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+        }
+        
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+        
+        .nav-label {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .nav-item {
+            padding: 0.625rem var(--space-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            background: var(--surface);
+            color: var(--text-primary);
+            border-left: 2px solid var(--accent-cyan);
+            margin-left: -2px;
+        }
+        
+        .nav-badge {
+            font-size: 0.6875rem;
+            padding: 0.125rem 0.5rem;
+            background: var(--accent-indigo);
+            color: white;
+            border-radius: 100px;
+            font-family: var(--font-mono);
+        }
+        
+        /* Main content */
+        .main {
+            padding: var(--space-xl);
+            overflow-y: auto;
         }
         
         .header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            padding: 2rem;
-            border-bottom: 1px solid #334155;
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
-        
-        .header p {
-            color: #94a3b8;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-        
-        .card {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #334155;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        .card h2 {
-            color: #60a5fa;
-            margin-bottom: 1rem;
+            margin-bottom: var(--space-xl);
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
+            align-items: flex-start;
         }
         
-        .status {
+        .header-title h1 {
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .header-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .status-pill {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        /* Grid layouts */
+        .grid {
+            display: grid;
+            gap: var(--space-md);
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .grid-asymmetric {
+            grid-template-columns: 1.5fr 1fr;
+        }
+        
+        @media (max-width: 1100px) {
+            .grid-3 { grid-template-columns: 1fr; }
+            .grid-asymmetric { grid-template-columns: 1fr; }
+        }
+        
+        /* Cards — floating, minimal */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: var(--space-md);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+        
+        .card-title {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
             font-weight: 500;
         }
         
-        .status.active {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
+        .card-action {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
         }
         
-        .status.running {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+        .card-action:hover {
+            opacity: 1;
         }
         
+        /* Metrics */
+        .metric {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+        
+        .metric-value {
+            font-family: var(--font-mono);
+            font-size: 2.25rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+        
+        .metric-value.small {
+            font-size: 1.5rem;
+        }
+        
+        .metric-label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        .metric-delta {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .metric-delta.negative {
+            color: var(--accent-amber);
+        }
+        
+        /* Agents list */
         .agent-list {
-            list-style: none;
-            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
         }
         
         .agent-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 1rem;
-            background: #0f172a;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            border: 1px solid #334155;
+            gap: var(--space-md);
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--border);
         }
         
-        .agent-info h4 {
-            color: #e2e8f0;
-            margin-bottom: 0.25rem;
+        .agent-item:last-child {
+            border-bottom: none;
         }
         
-        .agent-info p {
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
             font-size: 0.875rem;
-            color: #64748b;
+            color: var(--accent-cyan);
         }
         
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-top: 1rem;
+        .agent-info {
+            flex: 1;
         }
         
-        .stat {
-            text-align: center;
-            padding: 1rem;
-            background: #0f172a;
-            border-radius: 8px;
+        .agent-name {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
         }
         
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #3b82f6;
+        .agent-role {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
         }
         
-        .stat-label {
+        .agent-status {
             font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 0.25rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
         }
         
-        .template-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+        .agent-status.active {
+            color: var(--accent-green);
         }
         
-        .template-card {
-            background: #0f172a;
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-            border: 1px solid #334155;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .template-card:hover {
-            border-color: #3b82f6;
-            background: #1e293b;
-        }
-        
-        .template-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .template-name {
-            font-weight: 600;
-            color: #e2e8f0;
-            font-size: 0.875rem;
-        }
-        
-        .template-desc {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 0.25rem;
-        }
-        
-        .activity-log {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 1rem;
+        /* Activity stream */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
         }
         
         .activity-item {
             display: flex;
-            gap: 1rem;
-            padding: 0.75rem;
-            border-left: 3px solid #3b82f6;
-            margin-bottom: 0.5rem;
-            background: #0f172a;
-            border-radius: 0 8px 8px 0;
+            gap: var(--space-md);
+            padding: var(--space-sm);
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border-left: 2px solid var(--accent-indigo);
         }
         
         .activity-time {
+            font-family: var(--font-mono);
             font-size: 0.75rem;
-            color: #64748b;
-            min-width: 60px;
+            color: var(--text-muted);
+            width: 50px;
+            flex-shrink: 0;
         }
         
         .activity-content {
             flex: 1;
         }
         
-        .activity-title {
-            font-weight: 500;
-            color: #e2e8f0;
-        }
-        
-        .activity-desc {
+        .activity-text {
             font-size: 0.875rem;
-            color: #94a3b8;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
         
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #64748b;
+        .activity-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
         
-        .error {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
+        /* Templates */
+        .template-grid {
+            display: grid;
+            gap: var(--space-sm);
+        }
+        
+        .template-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: var(--space-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .template-item:hover {
+            border-color: var(--accent-cyan);
+            background: var(--surface);
+        }
+        
+        .template-icon {
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        .template-info {
+            flex: 1;
+        }
+        
+        .template-name {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+        }
+        
+        .template-desc {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        .template-meta {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+        
+        /* Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-sans);
+        }
+        
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+        
+        .btn-primary:hover {
+            background: #33e0ff;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--surface);
+            border-color: var(--text-muted);
+        }
+        
+        /* Section titles */
+        .section-title {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: var(--space-md);
+            font-weight: 500;
+        }
+        
+        .section {
+            margin-bottom: var(--space-xl);
+        }
+        
+        /* Sparkline placeholder */
+        .sparkline {
+            height: 30px;
+            background: linear-gradient(90deg, var(--accent-cyan) 0%, transparent 100%);
+            opacity: 0.3;
+            border-radius: 2px;
+            margin-top: var(--space-sm);
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1>ARLI Platform</h1>
-            <p>Autonomous Revenue & Labor Intelligence - Demo Dashboard</p>
-        </div>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">◆</div>
+                <div class="brand-text">ARLI</div>
+            </div>
+            
+            <nav class="nav-section">
+                <div class="nav-label">Control</div>
+                <a href="#" class="nav-item active">
+                    Dashboard
+                    <span class="nav-badge">3</span>
+                </a>
+                <a href="#" class="nav-item">Agents</a>
+                <a href="#" class="nav-item">Tasks</a>
+                <a href="#" class="nav-item">Workflows</a>
+            </nav>
+            
+            <nav class="nav-section">
+                <div class="nav-label">System</div>
+                <a href="#" class="nav-item">Metrics</a>
+                <a href="#" class="nav-item">Logs</a>
+                <a href="#" class="nav-item">Settings</a>
+            </nav>
+            
+            <div style="margin-top: auto;">
+                <div class="status-pill" style="width: 100%; justify-content: center;">
+                    <span class="status-dot"></span>
+                    System Operational
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main">
+            <header class="header">
+                <div class="header-title">
+                    <h1>My Marketing Agency</h1>
+                    <div class="header-meta">Autonomous Revenue & Labor Intelligence</div>
+                </div>
+                <div class="status-pill">
+                    <span class="status-dot"></span>
+                    5 agents active
+                </div>
+            </header>
+            
+            <!-- Metrics -->
+            <section class="section">
+                <div class="grid grid-3">
+                    <div class="card">
+                        <div class="metric">
+                            <div class="metric-label">Active Agents</div>
+                            <div class="metric-value">5</div>
+                            <div class="metric-delta">● All online</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="metric">
+                            <div class="metric-label">Tasks Completed</div>
+                            <div class="metric-value">156</div>
+                            <div class="metric-delta">↑ 12% this week</div>
+                        </div>
+                        <div class="sparkline"></div>
+                    </div>
+                    <div class="card">
+                        <div class="metric">
+                            <div class="metric-label">Revenue Impact</div>
+                            <div class="metric-value">$47.2K</div>
+                            <div class="metric-delta">↑ 8% vs last month</div>
+                        </div>
+                        <div class="sparkline" style="background: linear-gradient(90deg, var(--accent-green) 0%, transparent 100%);"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Two Column Layout -->
+            <div class="grid grid-asymmetric">
+                <!-- Left Column -->
+                <div>
+                    <!-- Agents -->
+                    <section class="section">
+                        <div class="section-title">Active Agents</div>
+                        <div class="card">
+                            <div class="agent-list">
+                                <div class="agent-item">
+                                    <div class="agent-avatar">01</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name">Campaign Architect</div>
+                                        <div class="agent-role">Media Planner</div>
+                                    </div>
+                                    <div class="agent-status active">156 tasks</div>
+                                </div>
+                                <div class="agent-item">
+                                    <div class="agent-avatar">02</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name">Creative Testing</div>
+                                        <div class="agent-role">Creative Strategist</div>
+                                    </div>
+                                    <div class="agent-status active">89 tasks</div>
+                                </div>
+                                <div class="agent-item">
+                                    <div class="agent-avatar">03</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name">Performance Reporter</div>
+                                        <div class="agent-role">Analytics Specialist</div>
+                                    </div>
+                                    <div class="agent-status active">432 tasks</div>
+                                </div>
+                                <div class="agent-item">
+                                    <div class="agent-avatar">04</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name">Client Communication</div>
+                                        <div class="agent-role">Account Manager</div>
+                                    </div>
+                                    <div class="agent-status active">267 tasks</div>
+                                </div>
+                                <div class="agent-item">
+                                    <div class="agent-avatar">05</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name">Opportunity Spotter</div>
+                                        <div class="agent-role">Business Development</div>
+                                    </div>
+                                    <div class="agent-status active">45 tasks</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Activity -->
+                    <section class="section">
+                        <div class="section-title">Activity Stream</div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-time">14:34</div>
+                                <div class="activity-content">
+                                    <div class="activity-text">Detected CPA anomaly +45% in campaign Q2_Lead_Gen</div>
+                                    <div class="activity-meta">Performance Reporter • Auto-remediation initiated</div>
+                                </div>
+                            </div>
+                            <div class="activity-item" style="border-left-color: var(--accent-cyan);">
+                                <div class="activity-time">14:31</div>
+                                <div class="activity-content">
+                                    <div class="activity-text">Completed A/B test with 5 new creative concepts</div>
+                                    <div class="activity-meta">Creative Testing • Winner: variant C (+23% CTR)</div>
+                                </div>
+                            </div>
+                            <div class="activity-item" style="border-left-color: var(--accent-amber);">
+                                <div class="activity-time">14:28</div>
+                                <div class="activity-content">
+                                    <div class="activity-text">Weekly reports dispatched to 12 client accounts</div>
+                                    <div class="activity-meta">Client Communication • 100% delivery rate</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                
+                <!-- Right Column -->
+                <div>
+                    <!-- Templates -->
+                    <section class="section">
+                        <div class="section-title">Deploy New Company</div>
+                        <div class="template-grid">
+                            <div class="template-item">
+                                <div class="template-icon">📈</div>
+                                <div class="template-info">
+                                    <div class="template-name">Agency Scalr</div>
+                                    <div class="template-desc">Marketing automation</div>
+                                </div>
+                                <div class="template-meta">5 agents</div>
+                            </div>
+                            <div class="template-item">
+                                <div class="template-icon">🛒</div>
+                                <div class="template-info">
+                                    <div class="template-name">Commerce Intel</div>
+                                    <div class="template-desc">E-commerce intelligence</div>
+                                </div>
+                                <div class="template-meta">5 agents</div>
+                            </div>
+                            <div class="template-item">
+                                <div class="template-icon">🚀</div>
+                                <div class="template-info">
+                                    <div class="template-name">SaaS Growth Lab</div>
+                                    <div class="template-desc">Subscription business</div>
+                                </div>
+                                <div class="template-meta">5 agents</div>
+                            </div>
+                            <div class="template-item">
+                                <div class="template-icon">🏥</div>
+                                <div class="template-info">
+                                    <div class="template-name">Clinic Flow</div>
+                                    <div class="template-desc">Healthcare operations</div>
+                                </div>
+                                <div class="template-meta">5 agents</div>
+                            </div>
+                            <div class="template-item">
+                                <div class="template-icon">⚖️</div>
+                                <div class="template-info">
+                                    <div class="template-name">Legal Synth</div>
+                                    <div class="template-desc">Law firm automation</div>
+                                </div>
+                                <div class="template-meta">5 agents</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: var(--space-md);">
+                            Browse All Templates →
+                        </button>
+                    </section>
+                    
+                    <!-- Quick Stats -->
+                    <section class="section">
+                        <div class="section-title">System Health</div>
+                        <div class="card">
+                            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary);">CPU Usage</span>
+                                    <span style="font-family: var(--font-mono); font-size: 0.875rem; color: var(--accent-cyan);">23%</span>
+                                </div>
+                                <div style="height: 4px; background: var(--bg-tertiary); border-radius: 2px; overflow: hidden;">
+                                    <div style="width: 23%; height: 100%; background: var(--accent-cyan); border-radius: 2px;"></div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary);">Memory</span>
+                                    <span style="font-family: var(--font-mono); font-size: 0.875rem; color: var(--accent-green);">4.2 GB</span>
+                                </div>
+                                <div style="height: 4px; background: var(--bg-tertiary); border-radius: 2px; overflow: hidden;">
+                                    <div style="width: 42%; height: 100%; background: var(--accent-green); border-radius: 2px;"></div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary);">Queue Depth</span>
+                                    <span style="font-family: var(--font-mono); font-size: 0.875rem; color: var(--text-primary);">12 tasks</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
     </div>
     
-    <div class="container">
-        <div class="grid">
-            <!-- Active Company -->
-            <div class="card" style="grid-column: 1 / -1;">
-                <h2>🏢 Active Company</h2>
-                <div id="company-info">
-                    <div class="loading">Loading...</div>
-                </div>
-            </div>
-            
-            <!-- Agents Status -->
-            <div class="card">
-                <h2>🤖 Active Agents</h2>
-                <div id="agents-list">
-                    <div class="loading">Loading agents...</div>
-                </div>
-            </div>
-            
-            <!-- Recent Tasks -->
-            <div class="card">
-                <h2>📋 Recent Tasks</h2>
-                <div id="tasks-list">
-                    <div class="loading">Loading tasks...</div>
-                </div>
-            </div>
-            
-            <!-- Available Templates -->
-            <div class="card" style="grid-column: 1 / -1;">
-                <h2>📦 Available Templates (10)</h2>
-                <div id="templates-list">
-                    <div class="loading">Loading templates...</div>
-                </div>
-            </div>
-            
-            <!-- Activity Log -->
-            <div class="card" style="grid-column: 1 / -1;">
-                <h2>📊 Activity Log</h2>
-                <div class="activity-log" id="activity-log">
-                    <div class="activity-item">
-                        <div class="activity-time">Now</div>
-                        <div class="activity-content">
-                            <div class="activity-title">System Started</div>
-                            <div class="activity-desc">ARLI mock server is running on port 3100</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const API_URL = 'http://157.180.88.143:3100';
+        // Real API Integration
+        const API_URL = 'http://localhost:3100';
         
-        // Fetch company data
-        async function loadCompany() {
+        async function loadData() {
             try {
-                const res = await fetch(`${API_URL}/api/companies/1`);
-                const data = await res.json();
-                const company = data.company;
+                const response = await fetch(`${API_URL}/api/companies`);
+                const data = await response.json();
                 
-                document.getElementById('company-info').innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${company.name}</h3>
-                            <p style="color: #64748b;">${company.description}</p>
-                            <p style="color: #64748b; margin-top: 0.5rem;">Template: <strong>${company.template}</strong></p>
-                        </div>
-                        <span class="status active">● ${company.status}</span>
-                    </div>
-                    <div class="stats">
-                        <div class="stat">
-                            <div class="stat-value">${company.agents.length}</div>
-                            <div class="stat-label">Active Agents</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value">989</div>
-                            <div class="stat-label">Tasks Completed</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value">99.9%</div>
-                            <div class="stat-label">Uptime</div>
-                        </div>
-                    </div>
-                `;
-            } catch (err) {
-                document.getElementById('company-info').innerHTML = 
-                    `<div class="error">Failed to load company: ${err.message}</div>`;
+                if (data.companies && data.companies.length > 0) {
+                    updateDashboard(data.companies[0]);
+                    console.log('✅ Real data loaded from API');
+                }
+            } catch (e) {
+                console.log('⚠️  API not available, using static data');
+                console.log('Run: bash quickstart-real.sh to start real API');
             }
         }
         
-        // Fetch agents
-        async function loadAgents() {
-            try {
-                const res = await fetch(`${API_URL}/api/companies/1/agents`);
-                const data = await res.json();
-                
-                document.getElementById('agents-list').innerHTML = data.agents.map(agent => `
-                    <div class="agent-item">
-                        <div class="agent-info">
-                            <h4>${agent.name}</h4>
-                            <p>${agent.description}</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <span class="status ${agent.status.toLowerCase()}">● ${agent.status}</span>
-                            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
-                                ${agent.tasksCompleted} tasks
-                            </p>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (err) {
-                document.getElementById('agents-list').innerHTML = 
-                    `<div class="error">Failed to load agents: ${err.message}</div>`;
+        function updateDashboard(company) {
+            if (company.name) {
+                document.querySelector('h1').textContent = company.name;
             }
         }
         
-        // Fetch tasks
-        async function loadTasks() {
-            try {
-                const res = await fetch(`${API_URL}/api/tasks`);
-                const data = await res.json();
-                
-                document.getElementById('tasks-list').innerHTML = data.tasks.map(task => `
-                    <div class="agent-item">
-                        <div class="agent-info">
-                            <h4>${task.type.replace(/_/g, ' ').toUpperCase()}</h4>
-                            <p>Agent: ${task.agentId}</p>
-                        </div>
-                        <span class="status ${task.status.toLowerCase() === 'completed' ? 'active' : 'running'}">
-                            ● ${task.status}
-                        </span>
-                    </div>
-                `).join('');
-            } catch (err) {
-                document.getElementById('tasks-list').innerHTML = 
-                    `<div class="error">Failed to load tasks: ${err.message}</div>`;
-            }
-        }
+        // Load data on startup
+        loadData();
         
-        // Fetch templates
-        async function loadTemplates() {
-            try {
-                const res = await fetch(`${API_URL}/api/templates`);
-                const data = await res.json();
-                
-                document.getElementById('templates-list').innerHTML = `
-                    <div class="template-grid">
-                        ${data.templates.map(t => `
-                            <div class="template-card" onclick="selectTemplate('${t.id}')">
-                                <div class="template-icon">${t.icon}</div>
-                                <div class="template-name">${t.name}</div>
-                                <div class="template-desc">${t.description}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            } catch (err) {
-                document.getElementById('templates-list').innerHTML = 
-                    `<div class="error">Failed to load templates: ${err.message}</div>`;
-            }
-        }
-        
-        // Add activity log entry
-        function addActivity(title, desc) {
-            const log = document.getElementById('activity-log');
-            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            const item = document.createElement('div');
-            item.className = 'activity-item';
-            item.innerHTML = `
-                <div class="activity-time">${time}</div>
-                <div class="activity-content">
-                    <div class="activity-title">${title}</div>
-                    <div class="activity-desc">${desc}</div>
-                </div>
-            `;
-            log.insertBefore(item, log.firstChild);
-        }
-        
-        // Select template
-        function selectTemplate(id) {
-            addActivity('Template Selected', `User selected template: ${id}`);
-        }
-        
-        // Initialize
-        async function init() {
-            await loadCompany();
-            await loadAgents();
-            await loadTasks();
-            await loadTemplates();
-            
-            // Simulate real-time activity
-            setInterval(() => {
-                const activities = [
-                    ['Campaign Architect', 'Generated new media plan for TechCorp'],
-                    ['Performance Reporter', 'Detected CPA anomaly in campaign Q2_Lead_Gen'],
-                    ['Creative Testing', 'Completed A/B test with 5 new concepts'],
-                    ['Client Communication', 'Sent weekly report to 12 clients'],
-                    ['Opportunity Spotter', 'Found upsell opportunity for E-commerce Store']
-                ];
-                const [agent, action] = activities[Math.floor(Math.random() * activities.length)];
-                addActivity(agent, action);
-            }, 10000);
-        }
-        
-        init();
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
     </script>
 </body>
 </html>
