@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARLI Platform - Demo Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 2rem;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #94a3b8;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #334155;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card h2 {
+            color: #60a5fa;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .status.running {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+        
+        .agent-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        
+        .agent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #334155;
+        }
+        
+        .agent-info h4 {
+            color: #e2e8f0;
+            margin-bottom: 0.25rem;
+        }
+        
+        .agent-info p {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 1rem;
+            background: #0f172a;
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .template-card {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .template-card:hover {
+            border-color: #3b82f6;
+            background: #1e293b;
+        }
+        
+        .template-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .template-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+        }
+        
+        .template-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-left: 3px solid #3b82f6;
+            margin-bottom: 0.5rem;
+            background: #0f172a;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .activity-time {
+            font-size: 0.75rem;
+            color: #64748b;
+            min-width: 60px;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+        
+        .activity-desc {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>ARLI Platform</h1>
+            <p>Autonomous Revenue & Labor Intelligence - Demo Dashboard</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="grid">
+            <!-- Active Company -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2>🏢 Active Company</h2>
+                <div id="company-info">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <!-- Agents Status -->
+            <div class="card">
+                <h2>🤖 Active Agents</h2>
+                <div id="agents-list">
+                    <div class="loading">Loading agents...</div>
+                </div>
+            </div>
+            
+            <!-- Recent Tasks -->
+            <div class="card">
+                <h2>📋 Recent Tasks</h2>
+                <div id="tasks-list">
+                    <div class="loading">Loading tasks...</div>
+                </div>
+            </div>
+            
+            <!-- Available Templates -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2>📦 Available Templates (10)</h2>
+                <div id="templates-list">
+                    <div class="loading">Loading templates...</div>
+                </div>
+            </div>
+            
+            <!-- Activity Log -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2>📊 Activity Log</h2>
+                <div class="activity-log" id="activity-log">
+                    <div class="activity-item">
+                        <div class="activity-time">Now</div>
+                        <div class="activity-content">
+                            <div class="activity-title">System Started</div>
+                            <div class="activity-desc">ARLI mock server is running on port 3100</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://157.180.88.143:3100';
+        
+        // Fetch company data
+        async function loadCompany() {
+            try {
+                const res = await fetch(`${API_URL}/api/companies/1`);
+                const data = await res.json();
+                const company = data.company;
+                
+                document.getElementById('company-info').innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${company.name}</h3>
+                            <p style="color: #64748b;">${company.description}</p>
+                            <p style="color: #64748b; margin-top: 0.5rem;">Template: <strong>${company.template}</strong></p>
+                        </div>
+                        <span class="status active">● ${company.status}</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value">${company.agents.length}</div>
+                            <div class="stat-label">Active Agents</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">989</div>
+                            <div class="stat-label">Tasks Completed</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">99.9%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('company-info').innerHTML = 
+                    `<div class="error">Failed to load company: ${err.message}</div>`;
+            }
+        }
+        
+        // Fetch agents
+        async function loadAgents() {
+            try {
+                const res = await fetch(`${API_URL}/api/companies/1/agents`);
+                const data = await res.json();
+                
+                document.getElementById('agents-list').innerHTML = data.agents.map(agent => `
+                    <div class="agent-item">
+                        <div class="agent-info">
+                            <h4>${agent.name}</h4>
+                            <p>${agent.description}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="status ${agent.status.toLowerCase()}">● ${agent.status}</span>
+                            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
+                                ${agent.tasksCompleted} tasks
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('agents-list').innerHTML = 
+                    `<div class="error">Failed to load agents: ${err.message}</div>`;
+            }
+        }
+        
+        // Fetch tasks
+        async function loadTasks() {
+            try {
+                const res = await fetch(`${API_URL}/api/tasks`);
+                const data = await res.json();
+                
+                document.getElementById('tasks-list').innerHTML = data.tasks.map(task => `
+                    <div class="agent-item">
+                        <div class="agent-info">
+                            <h4>${task.type.replace(/_/g, ' ').toUpperCase()}</h4>
+                            <p>Agent: ${task.agentId}</p>
+                        </div>
+                        <span class="status ${task.status.toLowerCase() === 'completed' ? 'active' : 'running'}">
+                            ● ${task.status}
+                        </span>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('tasks-list').innerHTML = 
+                    `<div class="error">Failed to load tasks: ${err.message}</div>`;
+            }
+        }
+        
+        // Fetch templates
+        async function loadTemplates() {
+            try {
+                const res = await fetch(`${API_URL}/api/templates`);
+                const data = await res.json();
+                
+                document.getElementById('templates-list').innerHTML = `
+                    <div class="template-grid">
+                        ${data.templates.map(t => `
+                            <div class="template-card" onclick="selectTemplate('${t.id}')">
+                                <div class="template-icon">${t.icon}</div>
+                                <div class="template-name">${t.name}</div>
+                                <div class="template-desc">${t.description}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('templates-list').innerHTML = 
+                    `<div class="error">Failed to load templates: ${err.message}</div>`;
+            }
+        }
+        
+        // Add activity log entry
+        function addActivity(title, desc) {
+            const log = document.getElementById('activity-log');
+            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-time">${time}</div>
+                <div class="activity-content">
+                    <div class="activity-title">${title}</div>
+                    <div class="activity-desc">${desc}</div>
+                </div>
+            `;
+            log.insertBefore(item, log.firstChild);
+        }
+        
+        // Select template
+        function selectTemplate(id) {
+            addActivity('Template Selected', `User selected template: ${id}`);
+        }
+        
+        // Initialize
+        async function init() {
+            await loadCompany();
+            await loadAgents();
+            await loadTasks();
+            await loadTemplates();
+            
+            // Simulate real-time activity
+            setInterval(() => {
+                const activities = [
+                    ['Campaign Architect', 'Generated new media plan for TechCorp'],
+                    ['Performance Reporter', 'Detected CPA anomaly in campaign Q2_Lead_Gen'],
+                    ['Creative Testing', 'Completed A/B test with 5 new concepts'],
+                    ['Client Communication', 'Sent weekly report to 12 clients'],
+                    ['Opportunity Spotter', 'Found upsell opportunity for E-commerce Store']
+                ];
+                const [agent, action] = activities[Math.floor(Math.random() * activities.length)];
+                addActivity(agent, action);
+            }, 10000);
+        }
+        
+        init();
+    </script>
+</body>
+</html>
