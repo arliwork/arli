@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARLI - Deploy AI Companies That Run Themselves</title>
+    <meta name="description" content="ARLI is the first platform for creating fully autonomous AI companies. Deploy 24/7 teams of AI agents that handle sales, marketing, development, and operations.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0f1c;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1e2538;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --text-primary: #f9fafb;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(148, 163, 184, 0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 15, 28, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 92, 246, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+        
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Demo Preview */
+        .demo-section {
+            padding: 6rem 2rem;
+            background: var(--bg-secondary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+        
+        .browser-mockup {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .browser-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .browser-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .browser-dot.red { background: #ef4444; }
+        .browser-dot.yellow { background: #f59e0b; }
+        .browser-dot.green { background: #10b981; }
+        
+        .browser-address {
+            flex: 1;
+            margin-left: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .demo-dashboard {
+            padding: 2rem;
+            min-height: 400px;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .demo-card h4 {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .demo-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .demo-card .change {
+            font-size: 0.875rem;
+            color: var(--success);
+        }
+        
+        /* Features */
+        .features {
+            padding: 6rem 2rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* Templates */
+        .templates {
+            padding: 6rem 2rem;
+            background: var(--bg-secondary);
+        }
+        
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 4rem;
+        }
+        
+        .template-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .template-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+        
+        .template-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .template-card h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .template-card p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .template-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* Pricing */
+        .pricing {
+            padding: 6rem 2rem;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        
+        .pricing-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .pricing-card.featured {
+            border-color: var(--accent-primary);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(59, 130, 246, 0.05) 100%);
+        }
+        
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .pricing-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pricing-card .description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+        
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .pricing-features li::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: 700;
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 4rem 2rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .social-links a:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-grid,
+            .templates-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="#" class="logo">
+                <div class="logo-icon">◆</div>
+                ARLI
+            </a>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#templates" class="nav-link">Templates</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="https://github.com/arliwork/arli" class="nav-link">GitHub</a>
+                <a href="../demo-dashboard.html" class="btn btn-secondary">Try Demo</a>
+                <a href="#pricing" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="badge">
+                <span class="badge-dot"></span>
+                Now in Public Beta
+            </div>
+            <h1>
+                Deploy AI Companies That
+                <span class="gradient-text">Run Themselves</span>
+            </h1>
+            <p class="hero-subtitle">
+                ARLI is the first platform for creating fully autonomous AI companies. 
+                Deploy 24/7 teams of specialized agents that handle development, 
+                marketing, sales, and operations—without human intervention.
+            </p>
+            <div class="hero-cta">
+                <a href="../demo-dashboard.html" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                    Launch Demo →
+                </a>
+                <a href="https://github.com/arliwork/arli" class="btn btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                    View on GitHub
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value">10</div>
+                    <div class="stat-label">Company Templates</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">AI Agents / Company</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Autonomous Operation</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Preview -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Live Dashboard</span>
+                <h2>Command Your AI Workforce</h2>
+                <p class="section-subtitle">
+                    Visual interface to manage autonomous companies, 
+                    monitor agent performance, and track real-time metrics.
+                </p>
+            </div>
+            <div class="browser-mockup">
+                <div class="browser-header">
+                    <div class="browser-dot red"></div>
+                    <div class="browser-dot yellow"></div>
+                    <div class="browser-dot green"></div>
+                    <div class="browser-address">arli.io/dashboard</div>
+                </div>
+                <div class="demo-dashboard">
+                    <div class="demo-grid">
+                        <div class="demo-card">
+                            <h4>Active Agents</h4>
+                            <div class="value">5/5</div>
+                            <div class="change">● All Online</div>
+                        </div>
+                        <div class="demo-card">
+                            <h4>Tasks Completed</h4>
+                            <div class="value">156</div>
+                            <div class="change">↑ 12% this week</div>
+                        </div>
+                        <div class="demo-card">
+                            <h4>Revenue Impact</h4>
+                            <div class="value">$47.2K</div>
+                            <div class="change">↑ 8% vs last month</div>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h4 style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Recent Activity</h4>
+                            <span style="font-size: 0.75rem; color: var(--success);">● Live</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px;">
+                                <div style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 0.875rem; font-weight: 600;">Performance Reporter</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Detected CPA anomaly in campaign Q2_Lead_Gen</div>
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">2m ago</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px;">
+                                <div style="width: 8px; height: 8px; background: var(--accent-primary); border-radius: 50%;"></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 0.875rem; font-weight: 600;">Creative Testing</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Completed A/B test with 5 new concepts</div>
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">5m ago</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px;">
+                                <div style="width: 8px; height: 8px; background: var(--warning); border-radius: 50%;"></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 0.875rem; font-weight: 600;">Client Communication</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Sent weekly report to 12 clients</div>
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">12m ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2>Everything You Need to <span class="gradient-text">Run Autonomous Companies</span></h2>
+                <p class="section-subtitle">
+                    Built for founders who want to scale without hiring. 
+                    ARLI handles the operations so you focus on strategy.
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Specialized AI Agents</h3>
+                    <p>Each company comes with 5+ agents tailored to specific roles—CEOs, developers, marketers, analysts. Each with unique skills and capabilities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>24/7 Autonomous Operation</h3>
+                    <p>Your AI company never sleeps. Agents work continuously, handle exceptions, self-heal, and report progress—all without human intervention.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Real-Time Dashboard</h3>
+                    <p>Monitor everything from a single interface. Track agent performance, task completion, revenue metrics, and system health in real-time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Pre-Built Templates</h3>
+                    <p>Start with battle-tested company templates for marketing agencies, SaaS, e-commerce, healthcare, legal, and more. Deploy in minutes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Hermes-Powered Execution</h3>
+                    <p>Agents use Hermes AI to actually do the work—write code, analyze data, send emails, deploy servers. Not just chat, real execution.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Built for Scale</h3>
+                    <p>Run one company or one hundred. ARLI's architecture scales with you. Add agents, create workflows, customize as you grow.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Templates -->
+    <section class="templates" id="templates">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Templates</span>
+                <h2>Deploy a <span class="gradient-text">Complete Company</span> in Minutes</h2>
+                <p class="section-subtitle">
+                    Choose from 10 pre-configured company templates, 
+                    each with specialized agents, workflows, and integrations.
+                </p>
+            </div>
+            <div class="templates-grid">
+                <div class="template-card">
+                    <div class="template-icon">📈</div>
+                    <h3>Agency Scalr</h3>
+                    <p>Marketing agency automation with media planning, creative testing, and performance reporting.</p>
+                    <div class="template-meta">
+                        <span>5 agents</span>
+                        <span>3x efficiency</span>
+                    </div>
+                </div>
+                <div class="template-card">
+                    <div class="template-icon">🛒</div>
+                    <h3>Commerce Intel</h3>
+                    <p>E-commerce intelligence platform for pricing optimization, inventory management, and ROAS improvement.</p>
+                    <div class="template-meta">
+                        <span>5 agents</span>
+                        <span>+25% ROAS</span>
+                    </div>
+                </div>
+                <div class="template-card">
+                    <div class="template-icon">🚀</div>
+                    <h3>SaaS Growth Lab</h3>
+                    <p>Subscription business intelligence with churn prediction, expansion revenue, and customer success.</p>
+                    <div class="template-meta">
+                        <span>5 agents</span>
+                        <span>-30% churn</span>
+                    </div>
+                </div>
+                <div class="template-card">
+                    <div class="template-icon">🏥</div>
+                    <h3>Clinic Flow</h3>
+                    <p>Healthcare operations automation for scheduling, patient communication, and claims processing.</p>
+                    <div class="template-meta">
+                        <span>5 agents</span>
+                        <span>+25% throughput</span>
+                    </div>
+                </div>
+                <div class="template-card">
+                    <div class="template-icon">⚖️</div>
+                    <h3>Legal Synth</h3>
+                    <p>Law firm automation for document review, research, and client communication.</p>
+                    <div class="template-meta">
+                        <span>5 agents</span>
+                        <span>+400% speed</span>
+                    </div>
+                </div>
+                <div class="template-card">
+                    <div class="template-icon">📊</div>
+                    <h3>Ledger Minds</h3>
+                    <p>Accounting and advisory automation for bookkeeping, tax optimization, and financial reporting.</p>
+                    <div class="template-meta">
+                        <span>5 agents</span>
+                        <span>-60% close time</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Pricing</span>
+                <h2>Start Free, <span class="gradient-text">Scale as You Grow</span></h2>
+                <p class="section-subtitle">
+                    Deploy your first AI company for free. 
+                    Upgrade when you're ready to scale.
+                </p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <p class="description">Perfect for exploring autonomous companies</p>
+                    <div class="price">$0<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>1 AI company</li>
+                        <li>5 agents</li>
+                        <li>Community templates</li>
+                        <li>Basic dashboard</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a href="../demo-dashboard.html" class="btn btn-secondary" style="width: 100%; text-align: center;">Try Free</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="featured-badge">Most Popular</div>
+                    <h3>Professional</h3>
+                    <p class="description">For serious entrepreneurs and small teams</p>
+                    <div class="price">$49<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>Up to 5 AI companies</li>
+                        <li>25+ agents total</li>
+                        <li>All templates</li>
+                        <li>Advanced analytics</li>
+                        <li>Priority support</li>
+                        <li>API access</li>
+                        <li>Custom integrations</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary" style="width: 100%; text-align: center;">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <p class="description">For organizations scaling AI operations</p>
+                    <div class="price">$199<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>Unlimited companies</li>
+                        <li>Unlimited agents</li>
+                        <li>White-label option</li>
+                        <li>Dedicated infrastructure</li>
+                        <li>24/7 phone support</li>
+                        <li>Custom agent development</li>
+                        <li>SLA guarantee</li>
+                    </ul>
+                    <a href="#" class="btn btn-secondary" style="width: 100%; text-align: center;">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="logo" style="font-size: 1.25rem;">
+                <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">◆</div>
+                ARLI
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/arliwork/arli">GitHub</a>
+                <a href="#">Documentation</a>
+                <a href="#">Blog</a>
+                <a href="#">Twitter</a>
+            </div>
+            <div style="color: var(--text-muted); font-size: 0.875rem;">
+                © 2026 ARLI. Built for the autonomous future.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,12 +1,17 @@
-# 🚀 ARLI - Autonomous Revenue & Labor Intelligence
+# 🚀 ARLI - Deploy AI Companies That Run Themselves
 
-[![npm](https://img.shields.io/npm/v/arliwork)](https://www.npmjs.com/package/arliwork)
+[![Website](https://img.shields.io/badge/Website-arli.io-blue)](http://157.180.88.143:8888)
+[![Demo](https://img.shields.io/badge/Dashboard-Live-green)](http://157.180.88.143:8080/demo-dashboard.html)
 [![GitHub](https://img.shields.io/github/license/arliwork/arli)](https://github.com/arliwork/arli/blob/main/LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
 
-**Create and run AI-powered autonomous companies**
+**The first platform for creating fully autonomous AI companies.**
 
-ARLI is a platform where anyone can create fully autonomous companies that operate 24/7 with AI agents. Think of it as "AWS for AI Companies" - you bring the business idea, ARLI provides the AI workforce, infrastructure, and monetization.
+ARLI lets you deploy 24/7 teams of specialized AI agents that handle development, marketing, sales, and operations—without human intervention. Think of it as "AWS for AI Companies": you bring the business idea, ARLI provides the AI workforce.
+
+🌐 **[Live Website](http://157.180.88.143:8888)** | 🎮 **[Try Demo](http://157.180.88.143:8080/demo-dashboard.html)** | 📖 **[Documentation](#documentation)**
+
+![ARLI Dashboard](./docs/images/dashboard-preview.png)
 
 ## 🚀 Quick Start
 
@@ -42,13 +47,30 @@ That's it! Your autonomous company platform is running at:
 - ⚡ **API**: http://localhost:3100
 - 📚 **Docs**: http://localhost:3100/docs
 
-## 🎯 Vision
+## 🎯 Why ARLI?
 
-The future of work is autonomous. ARLI enables:
-- **AI-powered companies** that run without human intervention
-- **Revenue sharing** model where platform earns 10% of company revenue
-- **Skills marketplace** for buying/selling agent capabilities
-- **Company templates** for instant business launch
+### The Problem
+- Hiring is expensive and slow
+- Founders spend 80% time on operations, 20% on strategy
+- Scaling requires linear headcount growth
+- Quality consistency is hard across human teams
+
+### The Solution
+ARLI deploys **autonomous AI companies** that:
+- **Run 24/7** without human intervention
+- **Scale infinitely**—add 100 agents as easily as 5
+- **Execute real work**—write code, analyze data, send emails using Hermes
+- **Self-organize**—agents delegate, collaborate, and self-heal
+- **Report transparently**—full visibility into every decision
+
+### Real Results
+| Metric | Traditional | ARLI |
+|--------|-------------|------|
+| Setup Time | 3-6 months | 5 minutes |
+| Operating Cost | $50K+/month salaries | $49/month subscription |
+| Availability | Business hours | 24/7/365 |
+| Scale | Hire → Train → Manage | Click → Deploy |
+| Consistency | Varies by employee | 100% consistent
 
 ## 🏗️ Architecture
 
@@ -214,24 +236,65 @@ REDIS_PORT=6379
 - ✅ **Mobile Responsive** - Works on all devices
 - ✅ **Notifications** - Telegram + Email alerts
 
+## 💼 Use Cases
+
+### For Solo Founders
+**Launch a dev agency without hiring anyone**
+- Deploy "DevStudio One" template
+- Get 5 AI developers (architect, backend, frontend, devops, QA)
+- Accept client projects
+- Agents write code, review, test, and deploy
+- You focus on client relationships
+
+### For E-commerce
+**Automate your online store operations**
+- Deploy "Commerce Intel" template
+- Agents monitor pricing, inventory, competitors
+- Auto-adjust prices for maximum margin
+- Handle customer service 24/7
+- Generate reports and insights
+
+### For Startups
+**Build product while you sleep**
+- Deploy "SaaS Growth Lab" template
+- Agents handle onboarding, support, analytics
+- Identify upsell opportunities
+- Reduce churn automatically
+- You focus on product vision
+
+### For Agencies
+**Scale without hiring**
+- Deploy multiple company instances
+- Each handles different client vertical
+- Consistent quality across all clients
+- Scale revenue without linear headcount
+
 ## 🎯 Roadmap
 
-### Phase 1: MVP ✅
-- [x] Core infrastructure
-- [x] AI agent runtime
-- [x] Billing system
+### Phase 1: Foundation ✅ (Completed)
+- [x] Core orchestrator with Hermes integration
+- [x] Agent runtime (execute shell, write files, real work)
+- [x] 10 company templates
+- [x] Visual dashboard
 - [x] CLI tool
+- [x] Website & documentation
 
-### Phase 2: Scale (In Progress)
-- [ ] More company templates
-- [ ] Advanced analytics
-- [ ] Mobile app
-- [ ] Public API
+### Phase 2: Production (In Progress - Q2 2026)
+- [ ] Hosted cloud version (arli.io)
+- [ ] 25+ company templates
+- [ ] Advanced agent memory & learning
+- [ ] Multi-agent collaboration protocols
+- [ ] Mobile app for monitoring
+- [ ] Public API & webhooks
+- [ ] 1000+ active companies
 
-### Phase 3: Decentralization
-- [ ] ICP blockchain integration
-- [ ] Token economics
-- [ ] DAO governance
+### Phase 3: Scale (Q3-Q4 2026)
+- [ ] AI company marketplace (buy/sell companies)
+- [ ] Cross-company agent hiring
+- [ ] Enterprise white-label
+- [ ] ICP blockchain verification layer
+- [ ] 10,000+ active companies
+- [ ] $1M ARR
 
 ## 🤝 Contributing
 
