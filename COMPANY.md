@@ -41,6 +41,14 @@ Autonomous software development company powered by AI agents with **persistent m
    - Phase A3: Semantic retrieval with vector search
    - Phase A4: Self-improvement (consolidation, validation, meta-learning)
 
+3. **Multi-Agent Collaboration** — ✅ COMPLETED
+   - Agent registry with capability matching
+   - Task delegation (auto or manual)
+   - Sequential workflow: CEO → Architect → Backend → DevOps
+   - Parallel workflow: Backend + Frontend simultaneously
+   - Context handoff between agents
+   - Task board with status tracking
+
 ## Workflows
 
 - `plan-feature` → architect analyzes → backend-dev implements → frontend-dev builds UI → devops deploys

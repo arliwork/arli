@@ -21,6 +21,13 @@ except ImportError:
     MEMORY_AVAILABLE = False
     print("[Runtime] Memory system not available, running without persistence")
 
+# Import collaboration system
+try:
+    from collaboration import CollaborationOrchestrator, DelegatedTask
+    COLLABORATION_AVAILABLE = True
+except ImportError:
+    COLLABORATION_AVAILABLE = False
+
 class AgentRuntime:
     """Runtime environment for autonomous agents with memory"""
     
@@ -39,6 +46,17 @@ class AgentRuntime:
             except Exception as e:
                 print(f"[Runtime] Memory init failed: {e}")
                 self.memory = None
+        
+        # Initialize collaboration system
+        self.collaboration = None
+        if COLLABORATION_AVAILABLE:
+            try:
+                self.collaboration = CollaborationOrchestrator(workspace=str(self.workspace))
+                # Register this agent in the registry
+                if self.collaboration.registry.get_agent(agent_id):
+                    print(f"[Runtime] Collaboration enabled for {agent_id}")
+            except Exception as e:
+                print(f"[Runtime] Collaboration init failed: {e}")
         
     def log(self, action: str, details: str):
         """Log agent action"""
@@ -372,6 +390,93 @@ hermes-agent --system "{system_prompt}" --prompt "{task_description}" --max-turn
         if self.memory:
             return self.memory.get_learning_insights()
         return {"error": "Memory not enabled"}
+    
+    # ===== COLLABORATION METHODS =====
+    
+    def delegate_task(self, title: str, description: str, task_type: str,
+                     required_capabilities: List[str], to_agent: str = None,
+                     priority: int = 1) -> Dict:
+        """
+        Delegate task to another agent
+        If to_agent not specified, finds best match automatically
+        """
+        if not self.collaboration:
+            return {"error": "Collaboration not enabled"}
+        
+        try:
+            task = self.collaboration.create_and_delegate(
+                title=title,
+                description=description,
+                task_type=task_type,
+                required_capabilities=required_capabilities,
+                from_agent=self.agent_id,
+                to_agent=to_agent,
+                priority=priority
+            )
+            
+            if task:
+                return {
+                    "success": True,
+                    "task_id": task.task_id,
+                    "title": task.title,
+                    "assignee": task.assignee,
+                    "status": task.status.value if hasattr(task.status, 'value') else str(task.status)
+                }
+            else:
+                return {"error": "Failed to create or delegate task"}
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def get_pending_tasks(self) -> List[Dict]:
+        """Get tasks assigned to this agent"""
+        if not self.collaboration:
+            return []
+        
+        tasks = self.collaboration.task_board.get_agent_tasks(self.agent_id)
+        return [
+            {
+                "task_id": t.task_id,
+                "title": t.title,
+                "status": t.status.value if hasattr(t.status, 'value') else str(t.status),
+                "creator": t.creator
+            }
+            for t in tasks
+            if t.assignee == self.agent_id
+        ]
+    
+    def complete_delegated_task(self, task_id: str, result: Dict) -> bool:
+        """Mark a delegated task as complete"""
+        if not self.collaboration:
+            return False
+        
+        from collaboration import TaskStatus
+        return self.collaboration.task_board.update_task_status(
+            task_id, TaskStatus.COMPLETED, result
+        )
+    
+    def get_available_agents(self) -> List[Dict]:
+        """Get list of available agents for collaboration"""
+        if not self.collaboration:
+            return []
+        
+        return [
+            {
+                "agent_id": agent.agent_id,
+                "name": agent.name,
+                "role": agent.role,
+                "status": agent.status,
+                "capabilities": [c.name for c in agent.capabilities]
+            }
+            for agent in self.collaboration.registry.agents.values()
+            if agent.can_accept_task()
+        ]
+    
+    def handoff_to_agent(self, to_agent: str, context: Dict) -> bool:
+        """Hand off context to another agent"""
+        if not self.collaboration:
+            return False
+        
+        return self.collaboration.handoff_context(self.agent_id, to_agent, context)
 
 # Example usage and testing
 if __name__ == "__main__":
