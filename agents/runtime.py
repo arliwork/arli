@@ -28,6 +28,13 @@ try:
 except ImportError:
     COLLABORATION_AVAILABLE = False
 
+# Import skills marketplace
+try:
+    from skills_marketplace import Marketplace, SkillInstaller, SkillPackage
+    MARKETPLACE_AVAILABLE = True
+except ImportError:
+    MARKETPLACE_AVAILABLE = False
+
 class AgentRuntime:
     """Runtime environment for autonomous agents with memory"""
     
@@ -57,6 +64,19 @@ class AgentRuntime:
                     print(f"[Runtime] Collaboration enabled for {agent_id}")
             except Exception as e:
                 print(f"[Runtime] Collaboration init failed: {e}")
+        
+        # Initialize skills marketplace
+        self.marketplace = None
+        self.skill_installer = None
+        self.loaded_skills: Dict[str, Any] = {}
+        if MARKETPLACE_AVAILABLE:
+            try:
+                self.marketplace = Marketplace()
+                self.skill_installer = SkillInstaller()
+                self._load_installed_skills()
+                print(f"[Runtime] Skills marketplace enabled for {agent_id}")
+            except Exception as e:
+                print(f"[Runtime] Skills marketplace init failed: {e}")
         
     def log(self, action: str, details: str):
         """Log agent action"""
@@ -477,6 +497,153 @@ hermes-agent --system "{system_prompt}" --prompt "{task_description}" --max-turn
             return False
         
         return self.collaboration.handoff_context(self.agent_id, to_agent, context)
+    
+    # ===== SKILLS MARKETPLACE METHODS =====
+    
+    def _load_installed_skills(self):
+        """Load all installed skills"""
+        if not self.skill_installer:
+            return
+        
+        installed = self.skill_installer.list_installed_skills()
+        for skill_record in installed:
+            skill_id = skill_record.get("skill_id")
+            if skill_id:
+                skill = self.skill_installer.load_skill(skill_id, self)
+                if skill:
+                    self.loaded_skills[skill_id] = skill
+    
+    def install_skill(self, skill_id: str) -> Dict:
+        """
+        Install skill from marketplace
+        """
+        if not self.marketplace or not self.skill_installer:
+            return {"error": "Marketplace not enabled"}
+        
+        # Use agent_id as user_id
+        result = self.skill_installer.install_skill(
+            skill_id=skill_id,
+            marketplace=self.marketplace,
+            user_id=self.agent_id
+        )
+        
+        if result.get("success"):
+            # Load the skill
+            skill = self.skill_installer.load_skill(skill_id, self)
+            if skill:
+                self.loaded_skills[skill_id] = skill
+        
+        return result
+    
+    def use_skill(self, skill_id: str, **kwargs) -> Dict:
+        """
+        Execute installed skill
+        """
+        if skill_id not in self.loaded_skills:
+            # Try to load it
+            if self.skill_installer:
+                skill = self.skill_installer.load_skill(skill_id, self)
+                if skill:
+                    self.loaded_skills[skill_id] = skill
+                else:
+                    return {"error": f"Skill '{skill_id}' not installed"}
+            else:
+                return {"error": "Skills not enabled"}
+        
+        skill = self.loaded_skills[skill_id]
+        
+        try:
+            if hasattr(skill, 'execute'):
+                result = skill.execute(**kwargs)
+                return {"success": True, "result": result}
+            else:
+                return {"error": "Skill has no execute method"}
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def list_skills(self) -> List[Dict]:
+        """List all installed skills"""
+        if not self.skill_installer:
+            return []
+        
+        return self.skill_installer.list_installed_skills()
+    
+    def search_skills(self, query: str = None, category: str = None, 
+                     max_price: float = None) -> List[Dict]:
+        """
+        Search skills in marketplace
+        """
+        if not self.marketplace:
+            return []
+        
+        from skills_marketplace import SkillCategory
+        
+        cat_enum = None
+        if category:
+            try:
+                cat_enum = SkillCategory(category)
+            except:
+                pass
+        
+        results = self.marketplace.search_skills(
+            query=query,
+            category=cat_enum,
+            max_price=max_price
+        )
+        
+        return [
+            {
+                "skill_id": s.skill_id,
+                "name": s.name,
+                "description": s.description[:100],
+                "price": s.price,
+                "rating": s.rating,
+                "downloads": s.downloads,
+                "author": s.author
+            }
+            for s in results
+        ]
+    
+    def purchase_skill(self, skill_id: str) -> Dict:
+        """
+        Purchase skill from marketplace
+        """
+        if not self.marketplace:
+            return {"error": "Marketplace not enabled"}
+        
+        return self.marketplace.purchase_skill(skill_id, self.agent_id)
+    
+    def create_skill(self, name: str) -> Dict:
+        """
+        Create new skill template
+        """
+        if not MARKETPLACE_AVAILABLE:
+            return {"error": "Skill creation not available"}
+        
+        try:
+            packager = SkillPackage()
+            template_path = packager.create_skill_template(name, self.agent_id)
+            
+            return {
+                "success": True,
+                "template_path": str(template_path),
+                "message": f"Edit files in {template_path} then publish"
+            }
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def publish_skill(self, skill_path: str) -> Dict:
+        """
+        Publish skill to marketplace
+        """
+        if not self.marketplace:
+            return {"error": "Marketplace not enabled"}
+        
+        try:
+            result = self.marketplace.publish_skill(Path(skill_path))
+            return result
+        except Exception as e:
+            return {"error": str(e)}
 
 # Example usage and testing
 if __name__ == "__main__":

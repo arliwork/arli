@@ -49,6 +49,13 @@ Autonomous software development company powered by AI agents with **persistent m
    - Context handoff between agents
    - Task board with status tracking
 
+4. **Skills Marketplace** — ✅ COMPLETED
+   - Skill creation with templates
+   - Marketplace listing and discovery
+   - Purchase and installation system
+   - Revenue sharing (70% creator, 30% platform)
+   - Skill reviews and ratings
+
 ## Workflows
 
 - `plan-feature` → architect analyzes → backend-dev implements → frontend-dev builds UI → devops deploys
