@@ -38,3 +38,25 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ARLI Agent Memory (local data)
+.arli/memory/
+agents/.arli/
+agents/__pycache__/
+agents/test_output.txt
+
+# Test artifacts (generated during tests)
+auth*.py
+login.py
+db_optimization.sql
+LoginForm.jsx
+build_*.py
+create_*.py
+implement_*.py
+add_*.py
