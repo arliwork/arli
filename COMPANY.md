@@ -53,7 +53,7 @@ Autonomous software development company powered by AI agents with **persistent m
    - Skill creation with templates
    - Marketplace listing and discovery
    - Purchase and installation system
-   - Revenue sharing (70% creator, 30% platform)
+   - Revenue sharing (90% creator, 10% platform)
    - Skill reviews and ratings
 
 ## Workflows
@@ -68,3 +68,53 @@ Autonomous software development company powered by AI agents with **persistent m
 - Success Rate: 100%
 - Patterns Learned: 7+
 - Knowledge Shared: 1+
+
+## Agent Experience & Learning Curve System — ✅ COMPLETED
+
+### Core Concept
+Agents accumulate experience and become valuable assets based on proven track records.
+
+### Experience Tiers
+- **NOVICE** (Lv 1-3): $50-150
+- **APPRENTICE** (Lv 4-6): $150-400
+- **JOURNEYMAN** (Lv 7-9): $400-1,000
+- **EXPERT** (Lv 10-14): $1,000-3,000
+- **MASTER** (Lv 15-19): $3,000-10,000
+- **GRANDMASTER** (Lv 20-24): $10,000-50,000
+- **LEGENDARY** (Lv 25+): $50,000+
+
+### Features
+- XP gain for completed tasks
+- Level-up system with tier progression
+- Domain expertise tracking (web_scraping, trading, content, etc.)
+- Achievement system
+- Market value calculation
+- Hourly rate estimation
+
+### Experience Marketplace
+- Sell trained agents with proven track records
+- Revenue split: 90% seller, 10% platform, 5% creator royalty
+- Transparent history: success rate, revenue, achievements
+- Compare agents side-by-side
+- Find agents by expertise domain
+
+### Files
+- `agents/agent_experience.py` — Core experience tracking (650+ lines)
+- `agents/experience_integration.py` — Marketplace integration (400+ lines)
+- `agents/EXPERIENCE_README.md` — Documentation
+
+### Workflow
+```
+Create Agent → Train on Tasks → Level Up → Generate Revenue → Sell on Marketplace
+```
+
+### Example ROI
+```
+Training investment: $1,000
+Training period: 3 months (100 tasks)
+Revenue generated: $8,000
+Sale value: $2,500
+────────────────────────────
+Total Return: $10,500
+ROI: 950%
+```
