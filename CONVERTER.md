@@ -1,46 +1,46 @@
 # Universal Agent Converter
 
-Конвертирует агентов из любой системы в универсальный формат Arli.
+Converts agents from any system to Arli universal format.
 
-## 🎯 Что делает
+## 🎯 What It Does
 
-1. **Извлекает** ценные данные из агента любой системы
-2. **Анализирует** learning curve и опыт
-3. **Упаковывает** в универсальный формат
-4. **Оценивает** рыночную стоимость
+1. **Extracts** valuable data from agents of any system
+2. **Analyzes** learning curve and experience
+3. **Packages** into universal format
+4. **Estimates** market value
 
-## 📦 Поддерживаемые системы
+## 📦 Supported Systems
 
-| Система | Статус | Качество конвертации |
-|---------|--------|---------------------|
+| System | Status | Conversion Quality |
+|--------|--------|-------------------|
 | Hermes | ✅ Ready | High |
 | OpenClaw | ✅ Ready | Medium |
 | AutoGen | 🚧 Planned | - |
 | LangChain | 🚧 Planned | - |
 | Custom | 🚧 Planned | - |
 
-## 🚀 Использование
+## 🚀 Usage
 
 ### CLI
 
 ```bash
-# Конвертировать одного агента
+# Convert single agent
 python tools/convert_agent.py my_agent.json
 
-# Сохранить результат
+# Save result
 python tools/convert_agent.py my_agent.json -o converted.json
 
-# JSON формат
+# JSON format
 python tools/convert_agent.py my_agent.json -f json
 
-# Импорт в Arli
+# Import to Arli
 python tools/convert_agent.py my_agent.json --import-to-arli
 ```
 
 ### API
 
 ```bash
-# Конвертировать через API
+# Convert via API
 curl -X POST http://localhost:8000/convert/agent \
   -H "Content-Type: application/json" \
   -d '{
@@ -61,40 +61,40 @@ print(f"Value: ${package.estimated_market_value}")
 print(f"Capabilities: {len(package.capabilities)}")
 ```
 
-## 📊 Что извлекается
+## 📊 What Gets Extracted
 
-### Capabilities (Умения)
-- Название и категория
-- Уровень владения (0-100%)
-- Количество выполнений
-- Успешность
-- Среднее время выполнения
+### Capabilities
+- Name and category
+- Proficiency level (0-100%)
+- Execution count
+- Success rate
+- Average execution time
 
-### Learning Trajectory (Траектория)
-- Общее количество задач
-- Успешные/неуспешные
-- Набранный XP
-- История уровней
-- Приобретённые навыки
-- Поведенческие паттерны
+### Learning Trajectory
+- Total task count
+- Successful/failed tasks
+- XP earned
+- Level history
+- Acquired skills
+- Behavioral patterns
 
-### Memory (Память)
-- Ключевые инсайты
-- Успешные стратегии
-- Предпочитаемые инструменты
-- Паттерны неудач
-- Контекстные предпочтения
+### Memory
+- Key insights
+- Successful strategies
+- Preferred tools
+- Failure patterns
+- Context preferences
 
-## 💰 Оценка стоимости
+## 💰 Value Estimation
 
-Алгоритм оценки учитывает:
-- Уровень и опыт агента
-- Количество и качество навыков
-- Уникальность инсайтов
-- Успешность выполнения задач
-- Редкость комбинации умений
+Pricing algorithm considers:
+- Agent level and experience
+- Skill quantity and quality
+- Insight uniqueness
+- Task completion success rate
+- Skill combination rarity
 
-## 🔌 Добавление нового адаптера
+## 🔌 Adding New Adapter
 
 ```python
 from agent_converter import BaseAgentAdapter
@@ -104,26 +104,26 @@ class MySystemAdapter(BaseAgentAdapter):
         super().__init__("mysystem")
     
     def can_parse(self, agent_data):
-        # Проверяем, наш ли это формат
+        # Check if this is our format
         return "mysystem_id" in agent_data
     
     def parse_capabilities(self, agent_data):
-        # Извлекаем умения
+        # Extract capabilities
         return [...]
     
     def parse_trajectory(self, agent_data):
-        # Извлекаем траекторию
+        # Extract trajectory
         return LearningTrajectory(...)
     
     def parse_memory(self, agent_data):
-        # Извлекаем память
+        # Extract memory
         return AgentMemory(...)
 
-# Регистрируем
+# Register
 converter.register_adapter(MySystemAdapter())
 ```
 
-## 📁 Формат выходных данных
+## 📁 Output Format
 
 ```json
 {
