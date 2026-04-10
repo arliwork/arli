@@ -1,20 +1,20 @@
 # 💰 ARLI Skills Marketplace - Demo
 
-## 🎯 Что построено
+## 🎯 What is Built
 
-Полноценный маркетплейс скиллов с монетизацией для ARLI.
+Full-featured skills marketplace with monetization for Arli.
 
 ---
 
-## 📦 Опубликованные Скиллы
+## 📦 Published Skills
 
 ### 1. Web Scraper Pro - $49.99
-**Автор:** ScrapeMaster  
-**Категория:** Web Scraping  
-**Возможности:**
-- Извлечение текста, ссылок, изображений
-- CSS-селекторы для точного таргетинга
-- Анти-детекция (User-Agent rotation)
+**Author:** ScrapeMaster  
+**Category:** Web Scraping  
+**Features:**
+- Extract text, links, images
+- CSS selectors for precise targeting
+- Anti-detection (User-Agent rotation)
 
 ```python
 agent.use_skill(
@@ -26,12 +26,12 @@ agent.use_skill(
 ```
 
 ### 2. Database Optimizer - $29.99
-**Автор:** DBExpert  
-**Категория:** Data Analysis  
-**Возможности:**
-- Анализ схем PostgreSQL/MySQL
-- Рекомендации по индексам
-- Оптимизация SQL-запросов
+**Author:** DBExpert  
+**Category:** Data Analysis  
+**Features:**
+- Analyze PostgreSQL/MySQL schemas
+- Index recommendations
+- SQL query optimization
 
 ```python
 agent.use_skill(
@@ -42,12 +42,12 @@ agent.use_skill(
 ```
 
 ### 3. API Security Scanner - $79.99 ⭐ PREMIUM
-**Автор:** SecurIT  
-**Категория:** Security  
-**Возможности:**
-- Поиск hardcoded secrets
-- Обнаружение SQL injection
-- Проверка аутентификации
+**Author:** SecurIT  
+**Category:** Security  
+**Features:**
+- Find hardcoded secrets
+- Detect SQL injection
+- Authentication checks
 
 ```python
 agent.use_skill(
@@ -57,9 +57,9 @@ agent.use_skill(
 ```
 
 ### 4. AI Content Generator - $39.99
-**Автор:** ContentKing  
-**Категория:** Content  
-**Возможности:**
+**Author:** ContentKing  
+**Category:** Content  
+**Features:**
 - Генерация маркетингового копи
 - Блог-посты, email-рассылки
 - Социальные медиа посты

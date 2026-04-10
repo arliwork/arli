@@ -22,11 +22,11 @@ Autonomous software development company powered by AI agents with **persistent m
 
 ## Memory System Features
 
-✅ **Episodic Memory** — каждая задача сохраняется с уроками  
-✅ **Pattern Learning** — успешные подходы повторяются  
-✅ **Failure Avoidance** — ошибки не повторяются  
-✅ **Shared Knowledge** — агенты делятся опытом  
-✅ **Context Injection** — релевантный опыт в промптах
+✅ **Episodic Memory** — every task is saved with lessons  
+✅ **Pattern Learning** — successful approaches are repeated  
+✅ **Failure Avoidance** — mistakes are not repeated  
+✅ **Shared Knowledge** — agents share experience  
+✅ **Context Injection** — relevant experience in prompts
 
 ## Active Projects
 
