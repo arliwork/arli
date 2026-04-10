@@ -1,29 +1,29 @@
-# 🚀 OpenClaw + Arli Export — Пошаговая инструкция
+# 🚀 OpenClaw + Arli Export — Setup Guide
 
-## 📋 Что тебе нужно сделать:
+## 📋 What You Need to Do:
 
-### Шаг 1: Скопируй файл агенту
+### Step 1: Copy the File to Your Agent
 
-Есть 3 способа дать этот код твоему OpenClaw агенту:
+There are 3 ways to give this code to your OpenClaw agent:
 
-#### Способ А: Через файл (самый простой)
+#### Method A: Via File (Simplest)
 
 ```bash
-# 1. Сохрани этот код в файл
-# Скопируй содержимое openclaw_integration.py в файл
+# 1. Save this code to a file
+# Copy the contents of openclaw_integration.py
 
-# 2. Положи файл рядом с твоим агентом
-# Например:
+# 2. Place the file next to your agent
+# For example:
 # /my_project/
 #   ├── openclaw_agent.py
-#   ├── openclaw_integration.py  <-- сюда
+#   ├── openclaw_integration.py  <-- here
 #   └── ...
 ```
 
-#### Способ Б: Вставь напрямую в код агента
+#### Method B: Paste Directly Into Agent Code
 
 ```python
-# В начало файла твоего OpenClaw агента добавь:
+# Add to the beginning of your OpenClaw agent file:
 
 # ===== AR EXPORT INTEGRATION =====
 import json
@@ -41,7 +41,7 @@ class Capability:
     description: str = ""
 
 class QuickExporter:
-    """Быстрый экспортёр для OpenClaw"""
+    """Quick exporter for OpenClaw"""
     
     def __init__(self, name: str, agent_id: str):
         self.name = name
@@ -59,16 +59,16 @@ class QuickExporter:
             "uniqueness_score": 0.3
         }
     
-    def add_skill(self, name: str, level: float = 0.5, uses: int = 0):
+    def skill(self, name: str, level: float = 0.5, uses: int = 0):
         self.data["capabilities"].append({
             "name": name, "category": "general", "proficiency": level,
             "execution_count": uses, "success_rate": 0.7
         })
-        self.data["xp"] += int(uses * 0.5)
+        self.data["xp"] += int(uses * 0.5) + 10
         self._recalculate()
         return self
     
-    def add_task(self, description: str, success: bool = True):
+    def task(self, success: bool = True, description: str = ""):
         self.data["trajectory"]["total_tasks"] += 1
         if success:
             self.data["trajectory"]["successful_tasks"] += 1
@@ -76,17 +76,19 @@ class QuickExporter:
         else:
             self.data["trajectory"]["failed_tasks"] += 1
             self.data["xp"] += 10
+        if description:
+            self.data["memory"]["key_insights"].append(description)
         self._recalculate()
         return self
     
     def _recalculate(self):
         xp = self.data["xp"]
         level = 1
-        xp_needed = 100
-        while xp >= xp_needed:
-            xp -= xp_needed
+        needed = 100
+        while xp >= needed:
+            xp -= needed
             level += 1
-            xp_needed = int(xp_needed * 1.2)
+            needed = int(needed * 1.2)
         self.data["level"] = min(level, 100)
         if level >= 80: self.data["tier"] = "LEGENDARY"
         elif level >= 60: self.data["tier"] = "EPIC"
@@ -96,11 +98,12 @@ class QuickExporter:
         for cap in self.data["capabilities"]:
             value += cap["proficiency"] * 5 + cap["execution_count"] * 0.1
         value += self.data["trajectory"]["total_tasks"] * 0.5
+        value += len(self.data["memory"]["key_insights"]) * 2
         self.data["estimated_market_value"] = round(value, 2)
     
     def save(self, filename=None):
         if filename is None:
-            filename = f"arli_export_{self.name.replace(' ', '_')}.json"
+            filename = f"arli_{self.data['name'].replace(' ', '_')}.json"
         with open(filename, 'w') as f:
             json.dump(self.data, f, indent=2)
         print(f"✅ Saved: {filename}")
@@ -110,7 +113,7 @@ class QuickExporter:
 # ===== END INTEGRATION =====
 ```
 
-#### Способ В: Через pip install (если выложим в PyPI)
+#### Method C: Via pip install (if published to PyPI)
 
 ```bash
 pip install arli-export
@@ -118,7 +121,7 @@ pip install arli-export
 
 ---
 
-### Шаг 2: Добавь метод в своего агента
+### Step 2: Add Export Method to Your Agent
 
 ```python
 class MyOpenClawAgent:
@@ -128,73 +131,73 @@ class MyOpenClawAgent:
         self.modules = []
         self.execution_log = []
     
-    # ===== ДОБАВЬ ЭТОТ МЕТОД =====
+    # ===== ADD THIS METHOD =====
     def export_to_arli(self, filename=None):
-        """Экспортировать агента на Arli marketplace"""
+        """Export agent to Arli marketplace"""
         
-        # Создаём экспортёр
+        # Create exporter
         exporter = QuickExporter(self.name, self.claw_id)
         
-        # Добавляем модули как навыки
+        # Add modules as skills
         for module in self.modules:
-            exporter.add_skill(
+            exporter.skill(
                 name=module.name,
                 level=getattr(module, 'efficiency', 0.5),
                 uses=getattr(module, 'executions', 0)
             )
         
-        # Добавляем историю выполнения
-        for log_entry in self.execution_log[-50:]:  # Последние 50
-            exporter.add_task(
-                description=str(log_entry.get('task', 'Unknown')),
-                success=log_entry.get('success', False)
+        # Add execution history
+        for log_entry in self.execution_log[-50:]:  # Last 50
+            exporter.task(
+                success=log_entry.get('success', False),
+                description=str(log_entry.get('task', 'Unknown'))
             )
         
-        # Сохраняем
+        # Save
         filepath = exporter.save(filename)
         
-        print(f"\n🚀 Готово к загрузке на Arli!")
-        print(f"📁 Файл: {filepath}")
-        print(f"💰 Оценочная стоимость: ${exporter.data['estimated_market_value']}")
-        print(f"📊 Уровень: {exporter.data['level']} ({exporter.data['tier']})")
+        print(f"\n🚀 Ready to upload to Arli!")
+        print(f"📁 File: {filepath}")
+        print(f"💰 Estimated value: ${exporter.data['estimated_market_value']}")
+        print(f"📊 Level: {exporter.data['level']} ({exporter.data['tier']})")
         
         return filepath
-    # ===== КОНЕЦ МЕТОДА =====
+    # ===== END METHOD =====
 ```
 
 ---
 
-### Шаг 3: Запусти экспорт
+### Step 3: Run Export
 
 ```python
-# Твой код
+# Your code
 agent = MyOpenClawAgent()
 
-# ... обучаешь агента ...
+# ... train your agent ...
 
-# Экспортируешь
-agent.export_to_arli()  # Создаст arli_export_My_Trading_Bot.json
+# Export
+agent.export_to_arli()  # Creates arli_export_My_Trading_Bot.json
 ```
 
-**Результат:**
+**Result:**
 ```
 ✅ Saved: arli_export_My_Trading_Bot_20250115.json
 💰 Market value: $245.50
 📊 Level: 12 (COMMON)
-🚀 Готово к загрузке на Arli!
+🚀 Ready to upload to Arli!
 ```
 
 ---
 
-### Шаг 4: Загрузи на Arli
+### Step 4: Upload to Arli
 
 ```bash
-# Вариант 1: Через curl
+# Option 1: Via curl
 curl -X POST https://api.arli.ai/agents \
   -H "Content-Type: application/json" \
   -d @arli_export_My_Trading_Bot_20250115.json
 
-# Вариант 2: Через Python
+# Option 2: Via Python
 import requests
 
 with open('arli_export_My_Trading_Bot_20250115.json') as f:
@@ -206,25 +209,25 @@ response = requests.post(
 )
 print(f"Uploaded! Agent ID: {response.json()['arli_id']}")
 
-# Вариант 3: Через веб-интерфейс
-# Зайди на https://arli.ai/upload и загрузи файл
+# Option 3: Via web interface (when launched)
+# Go to https://arli.ai/upload and select file
 ```
 
 ---
 
-## 📝 Пример полной интеграции
+## 📝 Example Full Integration
 
 ```python
 #!/usr/bin/env python3
 """
-Мой OpenClaw агент с Arli Export
+My OpenClaw Agent with Arli Export
 """
 
-# === КОПИРУЙ СЮДА КОД ИЗ РАЗДЕЛА "Способ Б" ВЫШЕ ===
-# (QuickExporter класс)
+# === COPY THE CODE FROM METHOD B ABOVE HERE ===
+# (QuickExporter class)
 
 class TradingBot:
-    """Мой торговый агент"""
+    """My trading agent"""
     
     def __init__(self):
         self.name = "Crypto Trading Pro"
@@ -237,10 +240,10 @@ class TradingBot:
         self.execution_log = []
     
     def trade(self, signal):
-        """Выполняет торговлю"""
+        """Execute trade"""
         result = self._execute_trade(signal)
         
-        # Логируем для экспорта
+        # Log for export
         self.execution_log.append({
             "task": f"Trade: {signal['pair']} {signal['action']}",
             "success": result['success'],
@@ -251,46 +254,46 @@ class TradingBot:
         return result
     
     def _execute_trade(self, signal):
-        # Твоя логика торговли
+        # Your trading logic
         return {"success": True, "profit": 0.5}
     
-    # === МЕТОД ЭКСПОРТА ===
+    # === EXPORT METHOD ===
     def export_to_arli(self, filename=None):
         exporter = QuickExporter(self.name, self.claw_id)
         
         for module in self.modules:
-            exporter.add_skill(
+            exporter.skill(
                 name=module["name"],
                 level=module["efficiency"],
                 uses=module["executions"]
             )
         
         for log in self.execution_log[-100:]:
-            exporter.add_task(log["task"], log["success"])
+            exporter.task(log["success"], log["task"])
         
         return exporter.save(filename)
 
 
-# ИСПОЛЬЗОВАНИЕ
+# USAGE
 if __name__ == "__main__":
     bot = TradingBot()
     
-    # Симулируем торговлю
+    # Simulate trading
     for i in range(20):
         bot.trade({"pair": "BTC/USD", "action": "buy"})
     
-    # Экспортируем
+    # Export
     bot.export_to_arli()
 ```
 
 ---
 
-## 🎯 Быстрый старт (копипаста)
+## 🎯 Quick Start (Copy-Paste)
 
-Если лень разбираться — просто скопируй это:
+If you don't want to figure it out — just copy this:
 
 ```python
-# 1. Вставь в свой агент этот класс:
+# 1. Paste this class into your agent:
 class ArliExport:
     def __init__(self, name, agent_id):
         import hashlib
@@ -324,38 +327,38 @@ class ArliExport:
         print(f"✅ {fname} ready! Value: ${self.data['estimated_market_value']}")
         return fname
 
-# 2. Используй в агенте:
+# 2. Use in agent:
 export = ArliExport("My Bot", "id_001")
 export.skill("trading", 0.8, 100).skill("analysis", 0.7, 50)
 export.task(True).task(True).task(False)
-export.save()  # Готово!
+export.save()  # Done!
 ```
 
 ---
 
-## ❓ Частые вопросы
+## ❓ FAQ
 
-**Q: Какие данные агент отправляет на Arli?**  
-A: Только метаданные (имя, навыки, метрики). Ни API ключей, ни стратегий, ни личных данных.
+**Q: What data does the agent send to Arli?**  
+A: Only metadata (name, skills, metrics). No API keys, strategies, or personal data.
 
-**Q: Можно ли редактировать файл перед загрузкой?**  
-A: Да! Это обычный JSON — открой и поменяй что хочешь.
+**Q: Can I edit the file before uploading?**  
+A: Yes! It's a regular JSON file — open and change whatever you want.
 
-**Q: Что если у меня нет execution_log?**  
-A: Создай пустой список `self.execution_log = []` и добавляй в него результаты работы.
+**Q: What if I don't have execution_log?**  
+A: Create an empty list `self.execution_log = []` and add work results to it.
 
-**Q: Сколько стоит загрузка?**  
-A: Загрузка бесплатная. Комиссия 10% только при продаже.
+**Q: How much does upload cost?**  
+A: Upload is free. 10% commission only on sale.
 
 ---
 
-## 🚀 Готово!
+## 🚀 Done!
 
-Теперь твой OpenClaw агент может сам создавать пакеты для Arli marketplace!
+Now your OpenClaw agent can create packages for Arli marketplace!
 
-**Просто вызови:**
+**Just call:**
 ```python
 agent.export_to_arli()
 ```
 
-И получи файл, готовый к продаже! 🎉
+And get a file ready for sale! 🎉

@@ -1,50 +1,50 @@
 # 🚀 Arli Export Skill
 
-Универсальный инструмент для экспорта любого AI-агента в формат Arli Marketplace.
+Universal tool for exporting any AI agent to Arli Marketplace format.
 
-## ⚡ Быстрый старт
+## ⚡ Quick Start
 
 ```bash
-# Установка
+# Installation
 pip install arli-export
 
-# Или скопируйте файлы
+# Or copy files
 wget https://arli.ai/skills/export_adapter.py
 ```
 
-## 📦 Поддерживаемые системы
+## 📦 Supported Systems
 
-- ✅ **Hermes** — полная авто-интеграция
-- ✅ **OpenClaw** — через SDK
-- ✅ **AutoGen** — через Python API
-- ✅ **LangChain** — через callbacks
-- ✅ **LlamaIndex** — через metadata
-- ✅ **Custom** — ручной экспорт
+- ✅ **Hermes** — full auto-integration
+- ✅ **OpenClaw** — via SDK
+- ✅ **AutoGen** — via Python API
+- ✅ **LangChain** — via callbacks
+- ✅ **LlamaIndex** — via metadata
+- ✅ **Custom** — manual export
 
-## 🎯 Использование
+## 🎯 Usage
 
-### 1. Для Hermes (Авто-сканирование)
+### 1. For Hermes (Auto-Scan)
 
 ```bash
-# В Hermes CLI
+# In Hermes CLI
 /export-to-arli
 
-# Результат: arli_export_Hermes_Agent_20250115.json
+# Result: arli_export_Hermes_Agent_20250115.json
 ```
 
-### 2. Для любой системы (Python)
+### 2. For Any System (Python)
 
 ```python
 from arli_export import ArliExporter
 
-# Создаём экспортёр
+# Create exporter
 exporter = ArliExporter(
     agent_name="My Trading Bot",
     agent_id="bot_001",
     source_system="openclaw"
 )
 
-# Добавляем данные
+# Add data
 exporter.add_capability(
     name="crypto_trading",
     category="trading",
@@ -59,9 +59,9 @@ exporter.add_session(
     xp_earned=50
 )
 
-# Экспортируем
-package = exporter.export()
-filepath = exporter.save()
+# Export
+package = exporter.export()  # dict
+filepath = exporter.save()   # saves to JSON
 
 print(f"Ready for Arli! Value: ${package['estimated_market_value']}")
 ```
@@ -69,46 +69,46 @@ print(f"Ready for Arli! Value: ${package['estimated_market_value']}")
 ### 3. CLI
 
 ```bash
-# Экспорт с авто-сканированием
-python export_adapter.py --name "My Agent" --id "agent_001" --hermes
+# Export with auto-scanning
+python export_adapter.py --name "My Agent" --id "001" --hermes
 
-# Или ручной
-python export_adapter.py --name "My Agent" --id "agent_001" --system custom
+# Or manual
+python export_adapter.py --name "My Agent" --id "001" --system custom
 ```
 
-## 📊 Что экспортируется
+## 📊 What Gets Exported
 
-| Данные | Описание | Результат |
-|--------|----------|-----------|
-| `capabilities` | Умения и навыки | Уровень мастерства, количество использований |
-| `sessions` | История задач | XP, успех/неудача |
-| `insights` | Инсайты и стратегии | Уникальные знания агента |
-| `preferences` | Предпочтения | Контекст работы |
+| Data | Description | Result |
+|------|-------------|--------|
+| `capabilities` | Skills and abilities | Mastery level, usage count |
+| `sessions` | Task history | XP, success/failure |
+| `insights` | Insights and strategies | Agent's unique knowledge |
+| `preferences` | Preferences | Work context |
 
-**Авто-генерация:**
-- `level` — уровень (1-100)
-- `xp` — общий опыт
-- `tier` — тир (COMMON → LEGENDARY)
-- `estimated_market_value` — оценка ценности ($)
-- `uniqueness_score` — уникальность (0-100%)
+**Auto-generated:**
+- `level` — agent level (1-100)
+- `xp` — total experience
+- `tier` — tier (COMMON → LEGENDARY)
+- `estimated_market_value` — price estimate ($)
+- `uniqueness_score` — uniqueness (%)
 
-## 💰 Алгоритм оценки
+## 💰 Pricing Algorithm
 
 ```
-Базовая стоимость: $10
-+ За навыки: proficiency × $5
-+ За опыт: executions × $0.10
-+ За успехи: success_rate × $50
-+ За инсайты: count × $2
-= Итоговая ценность
+Base value: $10
++ For skills: proficiency × $5
++ For experience: executions × $0.10
++ For success: success_rate × $50
++ For insights: count × $2
+= Final value
 ```
 
-## 🔌 Интеграция с системами
+## 🔌 System Integrations
 
 ### OpenClaw
 
 ```python
-# В коде OpenClaw агента
+# In OpenClaw agent code
 from arli_export import ArliExporter
 
 class MyClawAgent:
@@ -119,7 +119,7 @@ class MyClawAgent:
             source_system="openclaw"
         )
         
-        # Добавляем модули как capabilities
+        # Add modules as capabilities
         for module in self.modules:
             exporter.add_capability(
                 name=module.name,
@@ -128,7 +128,7 @@ class MyClawAgent:
                 execution_count=module.executions
             )
         
-        return exporter.save()
+        return exporter.save()  # ready to sell!
 ```
 
 ### AutoGen
@@ -136,7 +136,7 @@ class MyClawAgent:
 ```python
 from arli_export import ArliExporter
 
-# После сессии
+# After session
 def on_session_end(agent, sessions):
     exporter = ArliExporter(
         agent_name=agent.name,
@@ -144,11 +144,11 @@ def on_session_end(agent, sessions):
         source_system="autogen"
     )
     
-    for session in sessions:
+    for s in sessions:
         exporter.add_session(
-            task=session.task,
-            success=session.success,
-            xp_earned=session.xp
+            task=s.task,
+            success=s.success,
+            xp_earned=s.xp
         )
     
     exporter.save()
@@ -179,18 +179,18 @@ class ArliExportCallback(BaseCallbackHandler):
         self.exporter.save()
 ```
 
-## 📤 Загрузка на Arli
+## 📤 Upload to Arli
 
 ```bash
-# Через CLI
+# Via CLI
 arli upload my_agent.json
 
-# Через API
+# Via API
 curl -X POST https://api.arli.ai/agents \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d @my_agent.json
 
-# Через Python
+# Via Python
 import requests
 
 with open('my_agent.json') as f:
@@ -203,14 +203,14 @@ response = requests.post(
 )
 ```
 
-## 🔒 Безопасность
+## 🔒 Security
 
-- ❌ **НЕ** экспортирует API ключи
-- ❌ **НЕ** экспортирует пароли
-- ❌ **НЕ** экспортирует личные данные
-- ✅ Только метаданные и метрики
+- ❌ **NO** API keys exported
+- ❌ **NO** passwords exported
+- ❌ **NO** personal data exported
+- ✅ Only metadata and metrics
 
-## 📄 Формат выходного файла
+## 📄 Output File Format
 
 ```json
 {
@@ -235,12 +235,12 @@ response = requests.post(
 }
 ```
 
-## 🤝 Поддержка
+## 🤝 Support
 
 - 📖 Docs: https://docs.arli.ai/export
 - 💬 Discord: https://discord.gg/arli
 - 🐛 Issues: https://github.com/arliwork/arli/issues
 
-## 📜 Лицензия
+## 📜 License
 
-MIT — свободное использование в любых проектах.
+MIT — free to use in any project.

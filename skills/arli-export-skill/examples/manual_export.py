@@ -11,7 +11,7 @@ from export_adapter import ArliExporter
 
 def export_openclaw_agent():
     """
-    Пример экспорта OpenClaw агента
+    Example: Export OpenClaw agent
     """
     exporter = ArliExporter(
         agent_name="OpenClaw Trading Bot",
@@ -20,7 +20,7 @@ def export_openclaw_agent():
         description="Automated crypto trading with technical analysis"
     )
     
-    # Добавляем умения
+    # Add capabilities
     exporter.add_capability(
         name="technical_analysis",
         category="trading",
@@ -49,7 +49,7 @@ def export_openclaw_agent():
         description="Binance spot and futures trading"
     )
     
-    # Добавляем сессии (последние сделки)
+    # Add sessions (recent trades)
     sessions_data = [
         ("BTC long entry at $65k", True, 120),
         ("ETH scalp trade", True, 80),
@@ -65,7 +65,7 @@ def export_openclaw_agent():
             xp_earned=xp
         )
     
-    # Добавляем инсайты
+    # Add insights
     exporter.add_insight(
         content="BTC shows 78% probability of rise after 3 red candles on 4h",
         source="pattern_analysis",
@@ -84,13 +84,13 @@ def export_openclaw_agent():
         confidence=0.71
     )
     
-    # Добавляем предпочтения
+    # Add preferences
     exporter.add_preference("preferred_exchange", "binance")
     exporter.add_preference("risk_level", "moderate")
     exporter.add_preference("max_position_size", "5%")
     exporter.add_preference("timeframe", "4h")
     
-    # Экспортируем
+    # Export
     package = exporter.export()
     filepath = exporter.save()
     
@@ -102,7 +102,7 @@ def export_openclaw_agent():
 
 def export_autogen_agent():
     """
-    Пример экспорта AutoGen агента
+    Example: Export AutoGen agent
     """
     exporter = ArliExporter(
         agent_name="AutoGen Research Assistant",
@@ -111,7 +111,7 @@ def export_autogen_agent():
         description="Multi-agent research system with synthesis"
     )
     
-    # Умения
+    # Capabilities
     exporter.add_capability(
         name="web_research",
         category="research",
@@ -136,7 +136,7 @@ def export_autogen_agent():
         success_rate=0.81
     )
     
-    # Сессии
+    # Sessions
     for i in range(20):
         exporter.add_session(
             task=f"Research task #{i+1}",
@@ -144,7 +144,7 @@ def export_autogen_agent():
             xp_earned=50 if i % 5 != 0 else 10
         )
     
-    # Инсайты
+    # Insights
     exporter.add_insight(
         content="Multi-agent debate improves research quality by 34%",
         source="experiment",
@@ -159,7 +159,7 @@ def export_autogen_agent():
 
 def export_custom_agent():
     """
-    Пример экспорта кастомного агента (минимальные данные)
+    Example: Export custom agent (minimal data)
     """
     exporter = ArliExporter(
         agent_name="My Custom Bot",
@@ -167,7 +167,7 @@ def export_custom_agent():
         source_system="custom"
     )
     
-    # Минимум - только одно умение
+    # Minimum - just one capability
     exporter.add_capability(
         name="data_processing",
         category="data",

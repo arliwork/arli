@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-OpenClaw → Arli Export (Ультра-простая версия)
-Просто скопируй этот файл к своему агенту и используй!
+OpenClaw → Arli Export (Ultra-Simple Version)
+Just copy this file next to your agent and use!
 """
 
 import json
@@ -9,20 +9,20 @@ import hashlib
 
 class ArliExport:
     """
-    Упрощённый экспортёр для OpenClaw агентов
+    Simplified exporter for OpenClaw agents
     
-    Использование:
+    Usage:
         exp = ArliExport("My Bot", "bot_001")
         exp.skill("trading", level=0.8, uses=150)
         exp.task(success=True)
-        exp.save()  # Создаёт arli_My_Bot.json
+        exp.save()  # Creates arli_My_Bot.json
     """
     
     def __init__(self, agent_name: str, agent_id: str):
         self.name = agent_name
         self.id = agent_id
         
-        # Генерируем Arli ID
+        # Generate Arli ID
         hash_str = hashlib.md5(f"openclaw:{agent_id}".encode()).hexdigest()[:16]
         
         self.data = {
@@ -50,12 +50,12 @@ class ArliExport:
         }
     
     def skill(self, name: str, level: float = 0.5, uses: int = 0):
-        """Добавить навык
+        """Add a skill
         
         Args:
-            name: Название навыка
-            level: Уровень владения (0.0 - 1.0)
-            uses: Сколько раз использовался
+            name: Skill name
+            level: Proficiency level (0.0 - 1.0)
+            uses: How many times it was used
         """
         self.data["capabilities"].append({
             "name": name,
@@ -69,11 +69,11 @@ class ArliExport:
         return self
     
     def task(self, success: bool = True, description: str = ""):
-        """Добавить выполненную задачу
+        """Add a completed task
         
         Args:
-            success: Успешно ли выполнена
-            description: Описание задачи (опционально)
+            success: Whether it was successful
+            description: Task description (optional)
         """
         self.data["trajectory"]["total_tasks"] += 1
         if success:
@@ -90,14 +90,14 @@ class ArliExport:
         return self
     
     def insight(self, text: str):
-        """Добавить инсайт/стратегию"""
+        """Add an insight/strategy"""
         self.data["memory"]["successful_strategies"].append(text)
         self._update()
         return self
     
     def _update(self):
-        """Пересчитывает уровень и стоимость"""
-        # Пересчёт уровня
+        """Recalculate level and value"""
+        # Recalculate level
         xp = self.data["xp"]
         level = 1
         needed = 100
@@ -107,7 +107,7 @@ class ArliExport:
             needed = int(needed * 1.2)
         self.data["level"] = min(level, 100)
         
-        # Определение тира
+        # Determine tier
         if level >= 80:
             self.data["tier"] = "LEGENDARY"
         elif level >= 60:
@@ -117,14 +117,14 @@ class ArliExport:
         elif level >= 20:
             self.data["tier"] = "UNCOMMON"
         
-        # Пересчёт стоимости
+        # Recalculate value
         value = 10.0
         for cap in self.data["capabilities"]:
             value += cap["proficiency"] * 5
             value += cap["execution_count"] * 0.1
         value += self.data["trajectory"]["total_tasks"] * 0.5
         
-        # За уникальность
+        # For uniqueness
         value += len(self.data["memory"]["key_insights"]) * 2
         value += len(self.data["memory"]["successful_strategies"]) * 3
         
@@ -132,10 +132,10 @@ class ArliExport:
         self.data["uniqueness_score"] = min(0.3 + len(self.data["capabilities"]) * 0.1, 1.0)
     
     def save(self, filename: str = None) -> str:
-        """Сохраняет в JSON файл
+        """Save to JSON file
         
         Returns:
-            Путь к созданному файлу
+            Path to created file
         """
         if filename is None:
             safe_name = self.name.replace(" ", "_").replace("/", "_")
@@ -152,7 +152,7 @@ class ArliExport:
         return filename
     
     def preview(self):
-        """Показывает предпросмотр без сохранения"""
+        """Show preview without saving"""
         print("\n" + "="*50)
         print(f"📦 {self.name}")
         print("="*50)
@@ -167,51 +167,51 @@ class ArliExport:
         return self
 
 
-# ===== ПРИМЕР ИСПОЛЬЗОВАНИЯ =====
+# ===== USAGE EXAMPLE =====
 if __name__ == "__main__":
     print("🚀 OpenClaw → Arli Export Demo\n")
     
-    # Создаём экспорт
+    # Create export
     exp = ArliExport("Trading Bot Pro", "claw_trader_v3")
     
-    # Добавляем навыки
+    # Add skills
     exp.skill("BTC Trading", level=0.85, uses=1200)
     exp.skill("ETH Analysis", level=0.78, uses=890)
     exp.skill("Risk Management", level=0.92, uses=1500)
     
-    # Добавляем задачи
+    # Add tasks
     exp.task(True, "Bought BTC at support")
     exp.task(True, "Sold ETH at resistance")
     exp.task(True, "DCA position opened")
     exp.task(False, "Stop loss hit")
     exp.task(True, "Swing trade profit +5%")
     
-    # Добавляем инсайты
+    # Add insights
     exp.insight("BTC pumps after funding turns negative")
     exp.insight("ETH follows BTC with 2-3h delay")
     
-    # Предпросмотр
+    # Preview
     exp.preview()
     
-    # Сохраняем
+    # Save
     exp.save()
     
     print("\n📤 Upload to Arli:")
     print("   curl -X POST https://api.arli.ai/agents -d @arli_Trading_Bot_Pro.json")
 
 
-# ===== ИНТЕГРАЦИЯ С AGENT =====
+# ===== AGENT INTEGRATION =====
 """
-ВСТАВЬ ЭТО В СВОЙ OPENCLAW АГЕНТ:
+PASTE THIS INTO YOUR OPENCLAW AGENT:
 
-1. Скопируй класс ArliExport выше
+1. Copy the ArliExport class above
 
-2. Добавь метод в свой агент:
+2. Add method to your agent:
 
     def export_to_arli(self):
         exp = ArliExport(self.name, self.id)
         
-        # Добавь свои модули как skills
+        # Add your modules as skills
         for module in self.modules:
             exp.skill(
                 name=module.name,
@@ -219,17 +219,17 @@ if __name__ == "__main__":
                 uses=getattr(module, 'executions', 0)
             )
         
-        # Добавь историю как tasks
+        # Add history as tasks
         for log in self.execution_log[-50:]:
             exp.task(
                 success=log.get('success', True),
                 description=log.get('task', '')
             )
         
-        return exp.save()
+        return exp.save()  # Done!
 
-3. Используй:
+3. Use:
     agent = MyOpenClawAgent()
-    # ... работа агента ...
-    agent.export_to_arli()  # Готово!
+    # ... agent working ...
+    agent.export_to_arli()  # Ready!
 """

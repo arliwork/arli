@@ -1,54 +1,54 @@
 # Arli Export Skill
 
-Универсальный skill для экспорта агента в формат Arli Marketplace. Любой агент (Hermes, OpenClaw, AutoGen, etc.) может использовать этот skill для создания пакета данных, готового к продаже.
+Universal skill for exporting agents to Arli Marketplace format. Any agent (Hermes, OpenClaw, AutoGen, etc.) can use this skill to create a data package ready for sale.
 
-## 🎯 Что делает
+## 🎯 What It Does
 
-1. **Сканирует** данные агента (память, навыки, историю)
-2. **Извлекает** ценные метрики (XP, успехи, инсайты)
-3. **Упаковывает** в стандартный Arli JSON
-4. **Оценивает** рыночную стоимость
+1. **Scans** agent data (memory, skills, history)
+2. **Extracts** valuable metrics (XP, successes, insights)
+3. **Packages** into standard Arli JSON
+4. **Estimates** market value
 
-## 📦 Установка
+## 📦 Installation
 
-### Для Hermes Agent:
+### For Hermes Agent:
 
 ```bash
-# Копируем skill в папку skills
+# Copy skill to skills folder
 cp -r arli-export-skill ~/.hermes/skills/
 
-# Или через Hermes CLI
+# Or via Hermes CLI
 hermes skills install arli-export
 ```
 
-### Для других систем:
+### For Other Systems:
 
-Скопируйте файл `export_adapter.py` в проект и используйте как модуль.
+Copy the `export_adapter.py` file into your project and use as a module.
 
-## 🚀 Использование
+## 🚀 Usage
 
-### Вариант 1: Через команду
+### Option 1: Via Command
 
 ```bash
 # Hermes
 /hermes export-to-arli
 
-# Результат: arli_package_2025-01-15.json
+# Result: arli_package_2025-01-15.json
 ```
 
-### Вариант 2: Программно
+### Option 2: Programmatically
 
 ```python
 from arli_export import ArliExporter
 
-# Создаём экспортёр
+# Create exporter
 exporter = ArliExporter(
     agent_name="My Trading Bot",
     agent_id="bot_001",
-    source_system="hermes"  # или "openclaw", "autogen", etc.
+    source_system="hermes"  # or "openclaw", "autogen", etc.
 )
 
-# Добавляем данные
+# Add data
 exporter.add_skill(
     name="crypto_trading",
     category="trading",
@@ -64,22 +64,22 @@ exporter.add_session(
 )
 
 exporter.add_insight(
-    content="BTC dips on Sunday evenings",
+    content="BTC rises on Mondays",
     source="pattern_analysis"
 )
 
-# Генерируем пакет
+# Generate package
 package = exporter.export()
 
-# Сохраняем
+# Save
 with open("my_agent_arli.json", "w") as f:
     json.dump(package, f, indent=2)
 ```
 
-### Вариант 3: Авто-сканирование (Hermes)
+### Option 3: Auto-Scan (Hermes)
 
 ```python
-# Автоматически сканирует fabric, sessions, skills
+# Automatically scans fabric, sessions, skills
 from arli_export import HermesAutoScanner
 
 scanner = HermesAutoScanner()
@@ -88,64 +88,64 @@ package = scanner.scan_and_export(
     sessions_path="~/.hermes/sessions/"
 )
 
-print(f"Агент готов к продаже! Ценность: ${package['estimated_market_value']}")
+print(f"Agent ready for sale! Value: ${package['estimated_market_value']}")
 ```
 
-## 📊 Что экспортируется
+## 📊 What Gets Exported
 
-### Обязательные поля:
-- `name` — название агента
-- `source_system` — исходная система (hermes, openclaw, etc.)
-- `capabilities` — список умений
+### Required Fields:
+- `name` — agent name
+- `source_system` — source system (hermes, openclaw, etc.)
+- `capabilities` — list of skills
 
-### Опциональные поля:
-- `session_history` — история задач
-- `insights` — ключевые инсайты
-- `preferences` — предпочтения
-- `performance_metrics` — метрики производительности
+### Optional Fields:
+- `session_history` — task history
+- `insights` — key insights and strategies
+- `preferences` — context preferences
+- `performance_metrics` — performance metrics
 
-### Авто-генерируемые:
-- `arli_id` — уникальный ID в Arli
-- `level` — уровень (вычисляется из XP)
-- `xp` — общий опыт
-- `tier` — тир (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY)
-- `estimated_market_value` — оценочная стоимость
-- `uniqueness_score` — уникальность (0-100%)
+### Auto-Generated:
+- `arli_id` — unique Arli ID
+- `level` — level (calculated from XP)
+- `xp` — total experience
+- `tier` — tier (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY)
+- `estimated_market_value` — price estimate ($)
+- `uniqueness_score` — uniqueness (0-100%)
 
-## 💰 Алгоритм оценки стоимости
+## 💰 Pricing Algorithm
 
 ```python
 base_value = 10
 
-# За навыки
+# For skills
 for skill in capabilities:
     value += skill.proficiency * 5
     value += skill.executions * 0.1
 
-# За опыт
+# For experience
 value += total_tasks * 0.5
 value += success_rate * 50
 
-# За уникальность
+# For uniqueness
 value += unique_insights * 2
 value += successful_strategies * 3
 ```
 
-## 🔌 Интеграция с Arli
+## 🔌 Arli Integration
 
-После экспорта:
+After export:
 
 ```bash
-# Загрузить на marketplace
+# Upload to marketplace
 arli upload my_agent_arli.json
 
-# Или через API
+# Or via API
 curl -X POST https://api.arli.ai/agents \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d @my_agent_arli.json
 ```
 
-## 📁 Структура пакета
+## 📁 Package Structure
 
 ```json
 {
@@ -163,28 +163,28 @@ curl -X POST https://api.arli.ai/agents \
 }
 ```
 
-## 🛠️ Для разработчиков
+## 🛠️ For Developers
 
-### Добавить поддержку новой системы:
+### Add Support for New System:
 
 ```python
 from arli_export import BaseExporter
 
 class MySystemExporter(BaseExporter):
     def scan_agent(self, agent_instance):
-        # Ваша логика сканирования
+        # Your scanning logic
         self.add_skill(...)
         self.add_session(...)
         return self.export()
 ```
 
-## 🔒 Безопасность
+## 🔒 Security
 
-- ❌ **НЕ** экспортирует API ключи
-- ❌ **НЕ** экспортирует пароли
-- ❌ **НЕ** экспортирует личные данные пользователей
-- ✅ Экспортирует только метаданные и метрики
+- ❌ **NO** API keys exported
+- ❌ **NO** passwords exported
+- ❌ **NO** personal user data exported
+- ✅ Only metadata and metrics exported
 
-## 📄 Лицензия
+## 📄 License
 
-MIT - свободное использование в любых проектах.
+MIT — free to use in any projects.
