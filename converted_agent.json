@@ -1,0 +1,280 @@
+{
+  "name": "Icarus Dev Assistant",
+  "source_system": "hermes",
+  "original_id": "icarus_telegram_001",
+  "arli_id": "arli_fb5dc8b935ff074a",
+  "level": 20,
+  "xp": 15420,
+  "tier": "UNCOMMON",
+  "capabilities": [
+    {
+      "name": "python_development",
+      "category": "coding",
+      "proficiency": 0.92,
+      "execution_count": 1247,
+      "success_rate": 0.89,
+      "avg_execution_time": 45.5,
+      "description": "Full-stack Python development including FastAPI, SQLAlchemy, async patterns"
+    },
+    {
+      "name": "blockchain_integration",
+      "category": "web3",
+      "proficiency": 0.78,
+      "execution_count": 156,
+      "success_rate": 0.82,
+      "avg_execution_time": 120.0,
+      "description": "ICP blockchain integration, NFT contracts, canister development"
+    },
+    {
+      "name": "api_design",
+      "category": "architecture",
+      "proficiency": 0.88,
+      "execution_count": 423,
+      "success_rate": 0.91,
+      "avg_execution_time": 35.0,
+      "description": "RESTful API design, OpenAPI specs, authentication patterns"
+    },
+    {
+      "name": "database_design",
+      "category": "data",
+      "proficiency": 0.85,
+      "execution_count": 312,
+      "success_rate": 0.87,
+      "avg_execution_time": 40.2,
+      "description": "PostgreSQL schema design, migrations, query optimization"
+    },
+    {
+      "name": "devops",
+      "category": "infrastructure",
+      "proficiency": 0.75,
+      "execution_count": 189,
+      "success_rate": 0.79,
+      "avg_execution_time": 65.0,
+      "description": "Docker, CI/CD, deployment automation, monitoring"
+    },
+    {
+      "name": "terminal",
+      "category": "code",
+      "proficiency": 0.95,
+      "execution_count": 892,
+      "success_rate": 0.92,
+      "avg_execution_time": 15.5,
+      "description": "Tool usage for terminal"
+    },
+    {
+      "name": "web_search",
+      "category": "web",
+      "proficiency": 0.88,
+      "execution_count": 234,
+      "success_rate": 0.85,
+      "avg_execution_time": 25.0,
+      "description": "Tool usage for web_search"
+    },
+    {
+      "name": "web_extract",
+      "category": "web",
+      "proficiency": 0.82,
+      "execution_count": 156,
+      "success_rate": 0.88,
+      "avg_execution_time": 30.2,
+      "description": "Tool usage for web_extract"
+    },
+    {
+      "name": "browser_navigate",
+      "category": "web",
+      "proficiency": 0.9,
+      "execution_count": 445,
+      "success_rate": 0.87,
+      "avg_execution_time": 20.0,
+      "description": "Tool usage for browser_navigate"
+    },
+    {
+      "name": "execute_code",
+      "category": "code",
+      "proficiency": 0.93,
+      "execution_count": 678,
+      "success_rate": 0.89,
+      "avg_execution_time": 35.8,
+      "description": "Tool usage for execute_code"
+    },
+    {
+      "name": "read_file",
+      "category": "file",
+      "proficiency": 0.97,
+      "execution_count": 2134,
+      "success_rate": 0.99,
+      "avg_execution_time": 2.5,
+      "description": "Tool usage for read_file"
+    },
+    {
+      "name": "write_file",
+      "category": "file",
+      "proficiency": 0.95,
+      "execution_count": 892,
+      "success_rate": 0.94,
+      "avg_execution_time": 8.0,
+      "description": "Tool usage for write_file"
+    },
+    {
+      "name": "patch",
+      "category": "file",
+      "proficiency": 0.91,
+      "execution_count": 567,
+      "success_rate": 0.88,
+      "avg_execution_time": 12.5,
+      "description": "Tool usage for patch"
+    },
+    {
+      "name": "search_files",
+      "category": "file",
+      "proficiency": 0.89,
+      "execution_count": 445,
+      "success_rate": 0.92,
+      "avg_execution_time": 5.0,
+      "description": "Tool usage for search_files"
+    },
+    {
+      "name": "git_commit",
+      "category": "general",
+      "proficiency": 0.94,
+      "execution_count": 234,
+      "success_rate": 0.96,
+      "avg_execution_time": 10.0,
+      "description": "Tool usage for git_commit"
+    }
+  ],
+  "primary_domain": "file",
+  "secondary_domains": [
+    "data",
+    "infrastructure",
+    "coding"
+  ],
+  "trajectory": {
+    "total_tasks": 10,
+    "successful_tasks": 9,
+    "failed_tasks": 1,
+    "xp_gained": 15420,
+    "level_progression": [
+      {
+        "level": 1,
+        "xp": 0,
+        "date": "2025-03-27T06:30:00Z",
+        "milestone": "Agent initialized"
+      },
+      {
+        "level": 5,
+        "xp": 500,
+        "date": "2025-03-28T18:00:00Z",
+        "milestone": "First successful project"
+      },
+      {
+        "level": 10,
+        "xp": 2500,
+        "date": "2025-04-01T12:00:00Z",
+        "milestone": "10 projects completed"
+      },
+      {
+        "level": 15,
+        "xp": 6000,
+        "date": "2025-04-05T15:30:00Z",
+        "milestone": "Advanced skills acquired"
+      },
+      {
+        "level": 20,
+        "xp": 12000,
+        "date": "2025-04-08T10:00:00Z",
+        "milestone": "Expert level reached"
+      },
+      {
+        "level": 23,
+        "xp": 15420,
+        "date": "2025-04-10T11:30:00Z",
+        "milestone": "Arli project completed"
+      }
+    ],
+    "skill_acquisition": [
+      {
+        "skill": "python_development",
+        "date": "2025-03-27T06:30:00Z",
+        "source": "training"
+      },
+      {
+        "skill": "blockchain_integration",
+        "date": "2025-04-02T10:00:00Z",
+        "source": "project_arli"
+      },
+      {
+        "skill": "api_design",
+        "date": "2025-03-28T08:15:00Z",
+        "source": "training"
+      },
+      {
+        "skill": "database_design",
+        "date": "2025-03-29T14:20:00Z",
+        "source": "training"
+      },
+      {
+        "skill": "devops",
+        "date": "2025-04-01T09:30:00Z",
+        "source": "project_deployment"
+      }
+    ],
+    "behavioral_patterns": [
+      "Frequent learning: 2 times",
+      "Frequent decision: 1 times",
+      "Frequent pattern: 1 times",
+      "Frequent insight: 1 times",
+      "Frequent fix: 1 times"
+    ]
+  },
+  "memory": {
+    "key_insights": [
+      "Using SQLAlchemy async ORM with PostgreSQL provides better performance for agent marketplace with high concurrent access",
+      "DIP-721 NFT standard on ICP is optimal for agent ownership tokens due to low fees and fast finality",
+      "Celery workers with Redis backend is the best pattern for background task processing in Python agent systems",
+      "Agent XP should be non-linear - higher levels require exponentially more XP to create scarcity",
+      "Modular adapter pattern for agent conversion allows easy integration of new agent frameworks"
+    ],
+    "common_patterns": [
+      "Frequent learning: 2 times",
+      "Frequent decision: 1 times",
+      "Frequent pattern: 1 times",
+      "Frequent insight: 1 times",
+      "Frequent fix: 1 times"
+    ],
+    "preferred_tools": [
+      "read_file",
+      "terminal",
+      "write_file",
+      "execute_code",
+      "patch"
+    ],
+    "successful_strategies": [
+      "Using SQLAlchemy async ORM with PostgreSQL provides better performance for agent marketplace with high concurrent access"
+    ],
+    "failure_patterns": [
+      "Config validation failed"
+    ],
+    "context_preferences": {
+      "preferred_model": "kimi-k2.5",
+      "max_iterations": 90,
+      "tool_preferences": [
+        "read_file",
+        "terminal",
+        "write_file"
+      ]
+    }
+  },
+  "created_at": "2025-03-27T06:30:00Z",
+  "last_active": "2025-04-09T10:30:00Z",
+  "conversion_date": "2026-04-10T11:40:13.670351",
+  "conversion_quality_score": 1.0,
+  "compatible_frameworks": [
+    "arli",
+    "langchain",
+    "autogen"
+  ],
+  "required_integrations": [],
+  "estimated_market_value": 1040.0,
+  "uniqueness_score": 1.0
+}

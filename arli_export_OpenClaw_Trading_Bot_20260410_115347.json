@@ -1,0 +1,117 @@
+{
+  "name": "OpenClaw Trading Bot",
+  "source_system": "openclaw",
+  "original_id": "claw_trader_001",
+  "arli_id": "arli_708c39d264f01309",
+  "description": "Automated crypto trading with technical analysis",
+  "level": 11,
+  "xp": 2868,
+  "tier": "COMMON",
+  "capabilities": [
+    {
+      "name": "technical_analysis",
+      "category": "trading",
+      "proficiency": 0.88,
+      "execution_count": 2341,
+      "success_rate": 0.74,
+      "avg_execution_time": 2.5,
+      "description": "RSI, MACD, Bollinger Bands analysis"
+    },
+    {
+      "name": "risk_management",
+      "category": "trading",
+      "proficiency": 0.92,
+      "execution_count": 1567,
+      "success_rate": 0.89,
+      "avg_execution_time": 0.0,
+      "description": "Position sizing, stop-loss, take-profit"
+    },
+    {
+      "name": "binance_api",
+      "category": "integration",
+      "proficiency": 0.85,
+      "execution_count": 890,
+      "success_rate": 0.95,
+      "avg_execution_time": 0.0,
+      "description": "Binance spot and futures trading"
+    }
+  ],
+  "trajectory": {
+    "total_tasks": 5,
+    "successful_tasks": 4,
+    "failed_tasks": 1,
+    "xp_gained": 2868,
+    "level_progression": [
+      {
+        "level": 2,
+        "xp": 120,
+        "date": "2026-04-10T11:53:47.969786",
+        "milestone": "Level 2 reached"
+      },
+      {
+        "level": 3,
+        "xp": 220,
+        "date": "2026-04-10T11:53:47.969791",
+        "milestone": "Level 3 reached"
+      },
+      {
+        "level": 4,
+        "xp": 470,
+        "date": "2026-04-10T11:53:47.969794",
+        "milestone": "Level 4 reached"
+      }
+    ],
+    "skill_acquisition": [
+      {
+        "skill": "technical_analysis",
+        "proficiency": 0.88
+      },
+      {
+        "skill": "risk_management",
+        "proficiency": 0.92
+      },
+      {
+        "skill": "binance_api",
+        "proficiency": 0.85
+      }
+    ],
+    "behavioral_patterns": [
+      "Frequent trading: 2 capabilities",
+      "Frequent integration: 1 capabilities"
+    ]
+  },
+  "memory": {
+    "key_insights": [
+      "BTC shows 78% probability of rise after 3 red candles on 4h",
+      "High volatility periods correlate with funding rate spikes",
+      "Best entry time for alts: 04:00-06:00 UTC"
+    ],
+    "common_patterns": [
+      "Frequent trading: 2 capabilities",
+      "Frequent integration: 1 capabilities"
+    ],
+    "preferred_tools": [
+      "technical_analysis",
+      "binance_api",
+      "risk_management"
+    ],
+    "successful_strategies": [
+      "BTC shows 78% probability of rise after 3 red candles on 4h",
+      "High volatility periods correlate with funding rate spikes",
+      "Best entry time for alts: 04:00-06:00 UTC"
+    ],
+    "failure_patterns": [],
+    "context_preferences": {
+      "preferred_exchange": "binance",
+      "risk_level": "moderate",
+      "max_position_size": "5%",
+      "timeframe": "4h"
+    }
+  },
+  "created_at": "2026-04-10T11:53:47.969761",
+  "conversion_date": "2026-04-10T11:53:47.969930",
+  "estimated_market_value": 592.35,
+  "uniqueness_score": 0.65,
+  "conversion_quality_score": 0.8,
+  "additional_data": {}
+}

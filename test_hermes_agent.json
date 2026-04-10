@@ -1,0 +1,303 @@
+{
+  "agent_id": "icarus_telegram_001",
+  "name": "Icarus Dev Assistant",
+  "hermes_version": "2.1.0",
+  "model": "kimi-k2.5",
+  "provider": "kimi-coding",
+  "created_at": "2025-03-27T06:30:00Z",
+  "max_iterations": 90,
+  "skills": [
+    {
+      "name": "python_development",
+      "category": "coding",
+      "proficiency": 0.92,
+      "uses": 1247,
+      "success_rate": 0.89,
+      "avg_time": 45.5,
+      "description": "Full-stack Python development including FastAPI, SQLAlchemy, async patterns",
+      "acquired_at": "2025-03-27T06:30:00Z",
+      "source": "training"
+    },
+    {
+      "name": "blockchain_integration",
+      "category": "web3",
+      "proficiency": 0.78,
+      "uses": 156,
+      "success_rate": 0.82,
+      "avg_time": 120.0,
+      "description": "ICP blockchain integration, NFT contracts, canister development",
+      "acquired_at": "2025-04-02T10:00:00Z",
+      "source": "project_arli"
+    },
+    {
+      "name": "api_design",
+      "category": "architecture",
+      "proficiency": 0.88,
+      "uses": 423,
+      "success_rate": 0.91,
+      "avg_time": 35.0,
+      "description": "RESTful API design, OpenAPI specs, authentication patterns",
+      "acquired_at": "2025-03-28T08:15:00Z",
+      "source": "training"
+    },
+    {
+      "name": "database_design",
+      "category": "data",
+      "proficiency": 0.85,
+      "uses": 312,
+      "success_rate": 0.87,
+      "avg_time": 40.2,
+      "description": "PostgreSQL schema design, migrations, query optimization",
+      "acquired_at": "2025-03-29T14:20:00Z",
+      "source": "training"
+    },
+    {
+      "name": "devops",
+      "category": "infrastructure",
+      "proficiency": 0.75,
+      "uses": 189,
+      "success_rate": 0.79,
+      "avg_time": 65.0,
+      "description": "Docker, CI/CD, deployment automation, monitoring",
+      "acquired_at": "2025-04-01T09:30:00Z",
+      "source": "project_deployment"
+    }
+  ],
+  "trajectory": {
+    "total_xp": 15420,
+    "level_history": [
+      {
+        "level": 1,
+        "xp": 0,
+        "date": "2025-03-27T06:30:00Z",
+        "milestone": "Agent initialized"
+      },
+      {
+        "level": 5,
+        "xp": 500,
+        "date": "2025-03-28T18:00:00Z",
+        "milestone": "First successful project"
+      },
+      {
+        "level": 10,
+        "xp": 2500,
+        "date": "2025-04-01T12:00:00Z",
+        "milestone": "10 projects completed"
+      },
+      {
+        "level": 15,
+        "xp": 6000,
+        "date": "2025-04-05T15:30:00Z",
+        "milestone": "Advanced skills acquired"
+      },
+      {
+        "level": 20,
+        "xp": 12000,
+        "date": "2025-04-08T10:00:00Z",
+        "milestone": "Expert level reached"
+      },
+      {
+        "level": 23,
+        "xp": 15420,
+        "date": "2025-04-10T11:30:00Z",
+        "milestone": "Arli project completed"
+      }
+    ],
+    "tool_usage": {
+      "terminal": {
+        "count": 892,
+        "proficiency": 0.95,
+        "success_rate": 0.92,
+        "avg_time": 15.5
+      },
+      "web_search": {
+        "count": 234,
+        "proficiency": 0.88,
+        "success_rate": 0.85,
+        "avg_time": 25.0
+      },
+      "web_extract": {
+        "count": 156,
+        "proficiency": 0.82,
+        "success_rate": 0.88,
+        "avg_time": 30.2
+      },
+      "browser_navigate": {
+        "count": 445,
+        "proficiency": 0.9,
+        "success_rate": 0.87,
+        "avg_time": 20.0
+      },
+      "execute_code": {
+        "count": 678,
+        "proficiency": 0.93,
+        "success_rate": 0.89,
+        "avg_time": 35.8
+      },
+      "read_file": {
+        "count": 2134,
+        "proficiency": 0.97,
+        "success_rate": 0.99,
+        "avg_time": 2.5
+      },
+      "write_file": {
+        "count": 892,
+        "proficiency": 0.95,
+        "success_rate": 0.94,
+        "avg_time": 8.0
+      },
+      "patch": {
+        "count": 567,
+        "proficiency": 0.91,
+        "success_rate": 0.88,
+        "avg_time": 12.5
+      },
+      "search_files": {
+        "count": 445,
+        "proficiency": 0.89,
+        "success_rate": 0.92,
+        "avg_time": 5.0
+      },
+      "git_commit": {
+        "count": 234,
+        "proficiency": 0.94,
+        "success_rate": 0.96,
+        "avg_time": 10.0
+      }
+    }
+  },
+  "session_history": [
+    {
+      "date": "2025-04-10T11:35:00Z",
+      "status": "completed",
+      "xp_earned": 150,
+      "task": "Created Agent Converter"
+    },
+    {
+      "date": "2025-04-10T11:20:00Z",
+      "status": "completed",
+      "xp_earned": 200,
+      "task": "Built production infrastructure"
+    },
+    {
+      "date": "2025-04-10T10:45:00Z",
+      "status": "completed",
+      "xp_earned": 180,
+      "task": "Created real API with PostgreSQL"
+    },
+    {
+      "date": "2025-04-10T09:30:00Z",
+      "status": "completed",
+      "xp_earned": 220,
+      "task": "Built XP and marketplace systems"
+    },
+    {
+      "date": "2025-04-10T08:15:00Z",
+      "status": "completed",
+      "xp_earned": 160,
+      "task": "ICP blockchain integration"
+    },
+    {
+      "date": "2025-04-10T07:20:00Z",
+      "status": "completed",
+      "xp_earned": 140,
+      "task": "Fixed deployment issues"
+    },
+    {
+      "date": "2025-04-09T16:45:00Z",
+      "status": "completed",
+      "xp_earned": 190,
+      "task": "Multi-phase implementation"
+    },
+    {
+      "date": "2025-04-09T14:30:00Z",
+      "status": "completed",
+      "xp_earned": 130,
+      "task": "Agent experience system"
+    },
+    {
+      "date": "2025-04-09T12:00:00Z",
+      "status": "completed",
+      "xp_earned": 170,
+      "task": "Skills marketplace"
+    },
+    {
+      "date": "2025-04-09T10:30:00Z",
+      "status": "failed",
+      "xp_earned": 10,
+      "task": "Initial setup",
+      "error": "Config validation failed"
+    }
+  ],
+  "fabric_entries": [
+    {
+      "type": "decision",
+      "content": "Using SQLAlchemy async ORM with PostgreSQL provides better performance for agent marketplace with high concurrent access",
+      "training_value": "high",
+      "outcome": "Successfully handled 1000+ concurrent users in load tests",
+      "project": "arli"
+    },
+    {
+      "type": "learning",
+      "content": "DIP-721 NFT standard on ICP is optimal for agent ownership tokens due to low fees and fast finality",
+      "training_value": "high",
+      "outcome": "NFT minting costs reduced by 95% vs Ethereum",
+      "project": "arli"
+    },
+    {
+      "type": "pattern",
+      "content": "Celery workers with Redis backend is the best pattern for background task processing in Python agent systems",
+      "training_value": "high",
+      "outcome": "Task processing latency under 100ms",
+      "project": "general"
+    },
+    {
+      "type": "insight",
+      "content": "Agent XP should be non-linear - higher levels require exponentially more XP to create scarcity",
+      "training_value": "high",
+      "outcome": "Balanced economy with 5% monthly agent value growth",
+      "project": "arli"
+    },
+    {
+      "type": "fix",
+      "content": "Always use --hostname 0.0.0.0 when deploying Next.js in Docker for external access",
+      "training_value": "medium",
+      "outcome": "Fixed white screen issue on deployment",
+      "project": "arli"
+    },
+    {
+      "type": "strategy",
+      "content": "Modular adapter pattern for agent conversion allows easy integration of new agent frameworks",
+      "training_value": "high",
+      "outcome": "Added Hermes and OpenClaw adapters in 2 hours each",
+      "project": "arli"
+    },
+    {
+      "type": "learning",
+      "content": "FastAPI with Pydantic v2 provides 40% better performance than v1 for agent API endpoints",
+      "training_value": "medium",
+      "outcome": "API response time reduced to <50ms",
+      "project": "general"
+    }
+  ],
+  "memory": [
+    "User prefers clean architecture with clear separation of concerns",
+    "User values production-ready code over quick prototypes",
+    "User is interested in crypto/blockchain integration",
+    "User has background in trading (tennis betting, crypto)",
+    "User prefers Russian language for complex explanations"
+  ],
+  "tools": [
+    "terminal",
+    "web_search",
+    "web_extract",
+    "browser_navigate",
+    "execute_code",
+    "read_file",
+    "write_file",
+    "patch",
+    "search_files",
+    "git_commit",
+    "fabric_write"
+  ]
+}
