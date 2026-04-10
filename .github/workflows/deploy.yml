@@ -1,0 +1,53 @@
+name: Deploy to ICP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22'
+    
+    - name: Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: wasm32-unknown-unknown
+    
+    - name: Install ICP CLI
+      run: |
+        npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
+    
+    - name: Install dependencies
+      run: |
+        cd apps/web && npm ci
+    
+    - name: Build frontend
+      run: |
+        cd apps/web && npm run build
+    
+    - name: Build canisters
+      run: |
+        icp build
+    
+    - name: Deploy to ICP
+      env:
+        ICP_IDENTITY: ${{ secrets.ICP_IDENTITY }}
+      run: |
+        echo "$ICP_IDENTITY" > identity.pem
+        icp identity import deployer identity.pem
+        icp identity default deployer
+        icp deploy -e production
+    
+    - name: Update DNS
+      run: |
+        echo "Update DNS records to point to new canister IDs"

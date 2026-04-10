@@ -1,0 +1,60 @@
+type TokenMetadata = record {
+  token_uri : text;
+  name : text;
+  description : text;
+  image : text;
+  attributes : vec record { text; text };
+};
+
+type TokenInfo = record {
+  token_id : nat;
+  owner : principal;
+  metadata : TokenMetadata;
+  agent_id : text;
+  level : nat32;
+  tier : text;
+  market_value : nat64;
+  minted_at : nat64;
+};
+
+type Trait = record {
+  trait_type : text;
+  value : text;
+};
+
+type SaleRecord = record {
+  token_id : nat;
+  seller : principal;
+  buyer : principal;
+  price : nat64;
+  timestamp : nat64;
+};
+
+service : {
+  init : () -> ();
+  
+  // DIP-721 Core
+  mint : (principal, TokenMetadata, text, nat32, text, nat64) -> (nat);
+  owner_of : (nat) -> (opt principal) query;
+  transfer_from : (principal, principal, nat) -> ();
+  approve : (principal, nat) -> ();
+  get_approved : (nat) -> (opt principal) query;
+  set_approval_for_all : (principal, bool) -> ();
+  is_approved_for_all : (principal, principal) -> (bool) query;
+  
+  // Metadata
+  token_metadata : (nat) -> (opt TokenMetadata) query;
+  get_token_info : (nat) -> (opt TokenInfo) query;
+  tokens_of : (principal) -> (vec nat) query;
+  total_supply : () -> (nat) query;
+  get_all_tokens : (nat, nat) -> (vec TokenInfo) query;
+  
+  // Collection Info
+  name : () -> (text) query;
+  symbol : () -> (text) query;
+  description : () -> (text) query;
+  
+  // Sales History
+  record_sale : (nat, principal, principal, nat64) -> ();
+  get_sale_history : (text) -> (vec SaleRecord) query;
+}
