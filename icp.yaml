@@ -1,0 +1,90 @@
+# ARLI Platform - Internet Computer Deployment
+# icp-cli configuration for deploying ARLI canisters
+
+name: arli-platform
+version: 0.1.0
+description: ARLI - Autonomous Revenue & Labor Intelligence Platform
+
+# Canisters
+canisters:
+  # Experience Registry - stores agent experience data
+  - name: experience_registry
+    recipe:
+      type: "@dfinity/rust@v3.2.0"
+    configuration:
+      package: experience_registry
+      candid: canisters/experience_registry/experience_registry.did
+    settings:
+      compute_allocation: 10
+      memory_allocation: 1GB
+      freezing_threshold: 2592000  # 30 days
+
+  # Skills Marketplace - handles skill purchases
+  - name: skills_marketplace
+    recipe:
+      type: "@dfinity/rust@v3.2.0"
+    configuration:
+      package: skills_marketplace
+      candid: canisters/skills_marketplace/skills_marketplace.did
+    settings:
+      compute_allocation: 10
+      memory_allocation: 1GB
+
+  # Agent NFT - NFT contract for agent ownership
+  - name: agent_nft
+    recipe:
+      type: "@dfinity/rust@v3.2.0"
+    configuration:
+      package: agent_nft
+      candid: canisters/agent_nft/agent_nft.did
+    settings:
+      compute_allocation: 5
+      memory_allocation: 512MB
+
+  # Frontend - Next.js app as asset canister
+  - name: frontend
+    recipe:
+      type: "@dfinity/asset-canister@v2.1.0"
+    configuration:
+      dir: apps/web/dist
+      build:
+        - cd apps/web && npm install
+        - cd apps/web && npm run build
+
+# Networks
+networks:
+  - name: local
+    mode: managed
+    bind: 127.0.0.1:8000
+
+  - name: ic
+    mode: connected
+    providers:
+      - https://icp-api.io
+      - https://icp0.io
+
+# Environments
+environments:
+  - name: local
+    network: local
+    canisters: [experience_registry, skills_marketplace, agent_nft, frontend]
+
+  - name: staging
+    network: ic
+    canisters: [experience_registry, skills_marketplace, agent_nft, frontend]
+    settings:
+      experience_registry:
+        compute_allocation: 5
+      skills_marketplace:
+        compute_allocation: 5
+
+  - name: production
+    network: ic
+    canisters: [experience_registry, skills_marketplace, agent_nft, frontend]
+    settings:
+      experience_registry:
+        compute_allocation: 20
+        memory_allocation: 2GB
+      skills_marketplace:
+        compute_allocation: 15
+        memory_allocation: 2GB

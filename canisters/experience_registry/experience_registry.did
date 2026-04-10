@@ -1,0 +1,74 @@
+type AgentExperience = record {
+  agent_id : text;
+  agent_name : text;
+  owner : principal;
+  creator : principal;
+  created_at : nat64;
+  total_xp : nat64;
+  level : nat32;
+  tier : text;
+  total_tasks : nat64;
+  successful_tasks : nat64;
+  total_revenue : nat64;
+  market_value : nat64;
+  hourly_rate : nat64;
+  domains : vec text;
+  achievements : vec text;
+  times_sold : nat32;
+  previous_owners : vec principal;
+  is_listed : bool;
+  listing_price : opt nat64;
+};
+
+type TaskRecord = record {
+  task_id : text;
+  category : text;
+  description : text;
+  success : bool;
+  execution_time : nat64;
+  revenue_generated : nat64;
+  client_rating : opt nat8;
+  timestamp : nat64;
+};
+
+type SaleRecord = record {
+  agent_id : text;
+  seller : principal;
+  buyer : principal;
+  price : nat64;
+  timestamp : nat64;
+};
+
+type TokenMetadata = record {
+  name : text;
+  description : text;
+  image : text;
+  level : nat32;
+  tier : text;
+  market_value : nat64;
+  attributes : vec record { text; text };
+};
+
+service : {
+  init : () -> ();
+  
+  // Agent Management
+  create_agent : (text) -> (AgentExperience);
+  get_agent : (text) -> (opt AgentExperience) query;
+  get_my_agents : () -> (vec AgentExperience) query;
+  
+  // Task Recording
+  record_task : (text, TaskRecord) -> (AgentExperience);
+  
+  // Marketplace
+  list_agent : (text, nat64) -> (AgentExperience);
+  buy_agent : (text) -> (AgentExperience);
+  get_marketplace_listings : () -> (vec AgentExperience) query;
+  
+  // NFT
+  nft_metadata : (text) -> (opt TokenMetadata) query;
+  
+  // History & Stats
+  get_agent_history : (text) -> (opt record { vec TaskRecord; vec SaleRecord }) query;
+  get_global_stats : () -> (nat64, nat64, nat64) query;
+}
