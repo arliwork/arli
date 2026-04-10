@@ -295,7 +295,7 @@ packager.create_skill_template('Test Skill', 'Test Author')
 stats = marketplace.get_revenue_stats(author_id="devstudio_one")
 
 print(f"Total sales: ${stats['total_sales']:.2f}")
-print(f"Your earnings (70%): ${stats['total_creator_earnings']:.2f}")
+print(f"Your earnings (90%): ${stats['total_creator_earnings']:.2f}")
 
 for skill_id, data in stats['skill_breakdown'].items():
     print(f"  {data['name']}: {data['sales_count']} sales, ${data['revenue']:.2f}")

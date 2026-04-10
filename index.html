@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARLI | Automated Research & Linked Intelligence</title>
+    <meta name="description" content="ARLI builds autonomous intelligence systems that reason, learn, and collaborate. Pioneering the future of artificial general intelligence through linked multi-agent systems.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        arli: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        dark: '#030712',
+                        darker: '#02040a',
+                        surface: '#0a0f1c',
+                        'surface-light': '#111827',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #030712;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        /* Noise texture overlay */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-blue {
+            background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Glass morphism */
+        .glass {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Glow effects */
+        .glow-blue {
+            box-shadow: 0 0 80px rgba(14, 165, 233, 0.15);
+        }
+        
+        .glow-purple {
+            box-shadow: 0 0 80px rgba(139, 92, 246, 0.15);
+        }
+        
+        /* Custom cursor */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background: #38bdf8;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s;
+            mix-blend-mode: difference;
+        }
+        
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: transform 0.15s, width 0.2s, height 0.2s;
+        }
+        
+        /* Link hover effect */
+        .link-hover {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .link-hover::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .link-hover:hover::after {
+            transform: translateX(0);
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(14, 165, 233, 0.3);
+        }
+        
+        /* Card hover */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        
+        /* Grid background */
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        
+        /* Reveal animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+        
+        /* Aurora background */
+        .aurora {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .aurora::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+            animation: aurora 20s ease-in-out infinite;
+        }
+        
+        @keyframes aurora {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(5deg); }
+            66% { transform: translate(-20px, 20px) rotate(-5deg); }
+        }
+        
+        /* Neural network visualization */
+        #network-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-arli-500 selection:text-white">
+    <!-- Noise overlay -->
+    <div class="noise"></div>
+    
+    <!-- Custom cursor (desktop only) -->
+    <div class="cursor-dot hidden lg:block"></div>
+    <div class="cursor-outline hidden lg:block"></div>
+    
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 py-6">
+        <div class="w-full px-6 lg:px-12 xl:px-20">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-arli-500 to-purple-600 flex items-center justify-center glow-blue">
+                        <span class="text-white font-display font-bold text-lg">A</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-display font-bold text-xl text-white group-hover:text-arli-400 transition-colors">ARLI</span>
+                        <span class="text-[10px] text-gray-500 tracking-widest uppercase">Automated Research & Linked Intelligence</span>
+                    </div>
+                </a>
+                
+                <!-- Desktop Nav -->
+                <div class="hidden lg:flex items-center gap-10">
+                    <a href="#research" class="link-hover text-sm text-gray-400 hover:text-white transition-colors">Research</a>
+                    <a href="#technology" class="link-hover text-sm text-gray-400 hover:text-white transition-colors">Technology</a>
+                    <a href="#agents" class="link-hover text-sm text-gray-400 hover:text-white transition-colors">Agents</a>
+                    <a href="#careers" class="link-hover text-sm text-gray-400 hover:text-white transition-colors">Careers</a>
+                    <a href="#about" class="link-hover text-sm text-gray-400 hover:text-white transition-colors">About</a>
+                </div>
+                
+                <!-- CTA -->
+                <div class="flex items-center gap-6">
+                    <a href="#contact" class="btn-primary px-6 py-2.5 rounded-full text-sm font-semibold text-white">
+                        Join Waitlist
+                    </a>
+                    <button id="mobile-menu-btn" class="lg:hidden text-white text-xl">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 z-40 bg-dark/98 backdrop-blur-xl transform translate-x-full transition-transform duration-500 lg:hidden">
+        <div class="flex flex-col items-center justify-center h-full gap-8">
+            <a href="#research" class="text-2xl text-white font-display hover:text-arli-400 transition-colors">Research</a>
+            <a href="#technology" class="text-2xl text-white font-display hover:text-arli-400 transition-colors">Technology</a>
+            <a href="#agents" class="text-2xl text-white font-display hover:text-arli-400 transition-colors">Agents</a>
+            <a href="#careers" class="text-2xl text-white font-display hover:text-arli-400 transition-colors">Careers</a>
+            <a href="#about" class="text-2xl text-white font-display hover:text-arli-400 transition-colors">About</a>
+        </div>
+        <button id="close-menu" class="absolute top-6 right-6 text-white text-2xl">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="aurora"></div>
+        <canvas id="network-canvas"></canvas>
+        <div class="absolute inset-0 grid-bg opacity-30"></div>
+        
+        <div class="relative z-10 w-full px-6 lg:px-12 xl:px-20 pt-32 pb-20">
+            <div class="max-w-6xl mx-auto text-center">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass mb-8 reveal">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    <span class="text-sm text-gray-300">Building the future of autonomous intelligence</span>
+                    <a href="#research" class="text-sm text-arli-400 hover:text-arli-300 flex items-center gap-1 ml-2">
+                        Read our manifesto <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- Main Headline -->
+                <h1 class="font-display text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[1.1] mb-8">
+                    <span class="block text-white reveal">Intelligence That</span>
+                    <span class="block gradient-text reveal" style="animation-delay: 0.1s">Thinks Together</span>
+                </h1>
+                
+                <!-- Subheadline -->
+                <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed reveal" style="animation-delay: 0.2s">
+                    ARLI builds autonomous research systems where multiple AI agents collaborate, 
+                    reason, and discover. Moving beyond single-model limitations toward 
+                    emergent collective intelligence.
+                </p>
+                
+                <!-- CTAs -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16 reveal" style="animation-delay: 0.3s">
+                    <a href="#technology" class="btn-primary px-8 py-4 rounded-full font-semibold text-white flex items-center justify-center gap-2">
+                        <span>Explore Our Technology</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="#research" class="px-8 py-4 rounded-full font-semibold text-white border border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group">
+                        <i class="fas fa-book-open"></i>
+                        <span>Read Research</span>
+                    </a>
+                </div>
+                
+                <!-- Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto reveal" style="animation-delay: 0.4s">
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-display font-bold gradient-text-blue mb-1">
+                            <span class="stat-number" data-target="12">0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider">Research Papers</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-display font-bold gradient-text mb-1">
+                            <span class="stat-number" data-target="50">0</span>+
+                        </div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider">AI Agents</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-display font-bold text-white mb-1">
+                            <span class="stat-number" data-target="99">0</span>.9%
+                        </div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider">Uptime</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-display font-bold text-purple-400 mb-1">
+                            $<span class="stat-number" data-target="24">0</span>M
+                        </div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider">Funding</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <div class="w-6 h-10 border-2 border-gray-700 rounded-full flex items-start justify-center p-2">
+                <div class="w-1 h-2 bg-arli-400 rounded-full animate-bounce"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="relative py-32 border-y border-white/5">
+        <div class="w-full px-6 lg:px-12 xl:px-20">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="inline-block px-4 py-2 rounded-full glass text-xs text-arli-400 uppercase tracking-widest mb-4 reveal">Our Mission</span>
+                </div>
+                
+                <blockquote class="text-center reveal">
+                    <p class="text-3xl md:text-4xl lg:text-5xl font-display font-medium leading-tight text-white mb-8">
+                        "We believe the path to AGI lies not in scaling single models, 
+                        but in creating <span class="gradient-text">networks of specialized intelligences</span> 
+                        that learn to reason together."
+                    </p>
+                    <footer class="text-gray-500">
+                        — ARLI Research Manifesto, 2024
+                    </footer>
+                </blockquote>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section id="technology" class="relative py-32">
+        <div class="w-full px-6 lg:px-12 xl:px-20">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <!-- Left Content -->
+                    <div class="reveal">
+                        <span class="inline-block px-4 py-2 rounded-full glass text-xs text-arli-400 uppercase tracking-widest mb-6">Technology</span>
+                        <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-6">
+                            Multi-Agent <span class="gradient-text">Architecture</span>
+                        </h2>
+                        <p class="text-lg text-gray-400 mb-8 leading-relaxed">
+                            Our systems comprise specialized agents—each with distinct capabilities—
+                            that collaborate through a shared protocol. Research agents gather information, 
+                            reasoning agents synthesize insights, and validation agents ensure accuracy.
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-arli-500/10 border border-arli-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-network-wired text-arli-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-white mb-1">Linked Protocol</h4>
+                                    <p class="text-sm text-gray-400">Standardized communication layer enabling seamless agent collaboration and knowledge sharing.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-brain text-purple-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-white mb-1">Emergent Reasoning</h4>
+                                    <p class="text-sm text-gray-400">Collective intelligence emerges from agent interactions, solving problems no single model could address.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-shield-alt text-pink-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-white mb-1">Self-Correction</h4>
+                                    <p class="text-sm text-gray-400">Built-in validation loops where agents critique and refine each other's outputs for maximum accuracy.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Visual -->
+                    <div class="relative reveal" style="animation-delay: 0.2s">
+                        <div class="glass rounded-3xl p-8 glow-blue">
+                            <div class="space-y-4">
+                                <!-- Agent visualization -->
+                                <div class="glass rounded-xl p-4 flex items-center gap-4 border-l-4 border-arli-500">
+                                    <div class="w-10 h-10 rounded-full bg-arli-500/20 flex items-center justify-center">
+                                        <i class="fas fa-search text-arli-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-semibold text-white">Research Agent</div>
+                                        <div class="text-xs text-gray-500">Gathering sources...</div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-arli-400 animate-pulse"></span>
+                                        <span class="w-2 h-2 rounded-full bg-arli-400 animate-pulse" style="animation-delay: 0.2s"></span>
+                                        <span class="w-2 h-2 rounded-full bg-arli-400 animate-pulse" style="animation-delay: 0.4s"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="glass rounded-xl p-4 flex items-center gap-4 border-l-4 border-purple-500">
+                                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                        <i class="fas fa-cogs text-purple-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-semibold text-white">Reasoning Agent</div>
+                                        <div class="text-xs text-gray-500">Synthesizing insights...</div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                                        <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse" style="animation-delay: 0.2s"></span>
+                                        <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse" style="animation-delay: 0.4s"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="glass rounded-xl p-4 flex items-center gap-4 border-l-4 border-pink-500">
+                                    <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center">
+                                        <i class="fas fa-check-double text-pink-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-semibold text-white">Validation Agent</div>
+                                        <div class="text-xs text-gray-500">Verifying claims...</div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-pink-400 animate-pulse"></span>
+                                        <span class="w-2 h-2 rounded-full bg-pink-400 animate-pulse" style="animation-delay: 0.2s"></span>
+                                        <span class="w-2 h-2 rounded-full bg-pink-400 animate-pulse" style="animation-delay: 0.4s"></span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Connection lines -->
+                                <div class="flex justify-center gap-2 py-2">
+                                    <div class="h-8 w-px bg-gradient-to-b from-arli-500/50 to-transparent"></div>
+                                    <div class="h-8 w-px bg-gradient-to-b from-purple-500/50 to-transparent"></div>
+                                    <div class="h-8 w-px bg-gradient-to-b from-pink-500/50 to-transparent"></div>
+                                </div>
+                                
+                                <!-- Output -->
+                                <div class="glass rounded-xl p-4 bg-gradient-to-r from-arli-500/10 via-purple-500/10 to-pink-500/10 border border-white/10">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-lightbulb text-yellow-400"></i>
+                                        <span class="text-sm text-white">Synthesized intelligence output ready</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research Section -->
+    <section id="research" class="relative py-32 bg-surface/30">
+        <div class="w-full px-6 lg:px-12 xl:px-20">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20">
+                    <span class="inline-block px-4 py-2 rounded-full glass text-xs text-purple-400 uppercase tracking-widest mb-4 reveal">Research</span>
+                    <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-6 reveal">
+                        Latest <span class="gradient-text">Publications</span>
+                    </h2>
+                    <p class="text-lg text-gray-400 max-w-2xl mx-auto reveal">
+                        We publish our research openly to advance the field of autonomous intelligence 
+                        and multi-agent systems.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Paper 1 -->
+                    <article class="glass rounded-2xl overflow-hidden card-hover reveal">
+                        <div class="h-48 bg-gradient-to-br from-arli-900 to-arli-950 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-30">
+                                <div class="absolute top-10 left-10 w-20 h-20 border border-arli-500/30 rounded-full"></div>
+                                <div class="absolute bottom-10 right-10 w-32 h-32 border border-arli-500/20 rounded-full"></div>
+                            </div>
+                            <i class="fas fa-robot text-5xl text-arli-400/50 relative z-10"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="px-2 py-1 rounded bg-arli-500/10 text-arli-400 text-xs font-medium">NeurIPS 2024</span>
+                                <span class="text-xs text-gray-500">Dec 2024</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2 line-clamp-2">Chain of Agents: Large Language Models Collaborating on Long-Context Tasks</h3>
+                            <p class="text-sm text-gray-400 mb-4 line-clamp-3">We propose a novel multi-agent framework where specialized LLM agents collaborate through structured communication protocols to solve complex reasoning tasks.</p>
+                            <a href="#" class="text-arli-400 text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
+                                Read Paper <i class="fas fa-external-link-alt text-xs"></i>
+                            </a>
+                        </div>
+                    </article>
+                    
+                    <!-- Paper 2 -->
+                    <article class="glass rounded-2xl overflow-hidden card-hover reveal" style="animation-delay: 0.1s">
+                        <div class="h-48 bg-gradient-to-br from-purple-900 to-purple-950 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-30">
+                                <div class="absolute top-5 right-20 w-24 h-24 border border-purple-500/30 rounded-full"></div>
+                                <div class="absolute bottom-5 left-20 w-16 h-16 border border-purple-500/20 rounded-full"></div>
+                            </div>
+                            <i class="fas fa-project-diagram text-5xl text-purple-400/50 relative z-10"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="px-2 py-1 rounded bg-purple-500/10 text-purple-400 text-xs font-medium">arXiv</span>
+                                <span class="text-xs text-gray-500">Nov 2024</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2 line-clamp-2">Emergent Multi-Agent Reasoning through Debate and Consensus</h3>
+                            <p class="text-sm text-gray-400 mb-4 line-clamp-3">Demonstrating how adversarial collaboration between AI agents leads to higher accuracy than single-model approaches on complex reasoning benchmarks.</p>
+                            <a href="#" class="text-purple-400 text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
+                                Read Paper <i class="fas fa-external-link-alt text-xs"></i>
+                            </a>
+                        </div>
+                    </article>
+                    
+                    <!-- Paper 3 -->
+                    <article class="glass rounded-2xl overflow-hidden card-hover reveal" style="animation-delay: 0.2s">
+                        <div class="h-48 bg-gradient-to-br from-pink-900 to-pink-950 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-30">
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 border border-pink-500/20 rounded-full"></div>
+                            </div>
+                            <i class="fas fa-sync-alt text-5xl text-pink-400/50 relative z-10"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="px-2 py-1 rounded bg-pink-500/10 text-pink-400 text-xs font-medium">ICML 2024</span>
+                                <span class="text-xs text-gray-500">Jul 2024</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2 line-clamp-2">Self-Improving Agent Societies Through Recursive Refinement</h3>
+                            <p class="text-sm text-gray-400 mb-4 line-clamp-3">A framework for multi-agent systems that continuously improve through self-play, critique, and iterative refinement without human intervention.</p>
+                            <a href="#" class="text-pink-400 text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
+                                Read Paper <i class="fas fa-external-link-alt text-xs"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+                
+                <div class="text-center mt-12 reveal">
+                    <a href="#" class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white hover:bg-white/5 transition-all">
+                        <span>View All Publications</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents Section -->
+    <section id="agents" class="relative py-32">
+        <div class="w-full px-6 lg:px-12 xl:px-20">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20">
+                    <span class="inline-block px-4 py-2 rounded-full glass text-xs text-pink-400 uppercase tracking-widest mb-4 reveal">Our Agents</span>
+                    <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-6 reveal">
+                        Specialized <span class="gradient-text">Intelligence Units</span>
+                    </h2>
+                    <p class="text-lg text-gray-400 max-w-2xl mx-auto reveal">
+                        Each ARLI agent is designed for specific cognitive tasks, working together 
+                        as a coordinated intelligence network.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Agent 1 -->
+                    <div class="glass rounded-2xl p-6 card-hover reveal">
+                        <div class="w-14 h-14 rounded-2xl bg-arli-500/10 border border-arli-500/20 flex items-center justify-center mb-5">
+                            <i class="fas fa-search text-arli-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Research Agent</h3>
+                        <p class="text-sm text-gray-400 mb-4">Gathers and synthesizes information from multiple sources with source verification.</p>
+                        <div class="flex items-center gap-2 text-xs text-arli-400">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Real-time search</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Agent 2 -->
+                    <div class="glass rounded-2xl p-6 card-hover reveal" style="animation-delay: 0.1s">
+                        <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-5">
+                            <i class="fas fa-brain text-purple-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Reasoning Agent</h3>
+                        <p class="text-sm text-gray-400 mb-4">Performs complex logical inference and step-by-step problem solving.</p>
+                        <div class="flex items-center gap-2 text-xs text-purple-400">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Chain-of-thought</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Agent 3 -->
+                    <div class="glass rounded-2xl p-6 card-hover reveal" style="animation-delay: 0.2s">
+                        <div class="w-14 h-14 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center mb-5">
+                            <i class="fas fa-code text-pink-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Code Agent</h3>
+                        <p class="text-sm text-gray-400 mb-4">Writes, executes, and debugs code in multiple programming languages.</p>
+                        <div class="flex items-center gap-2 text-xs text-pink-400">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Self-execution</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Agent 4 -->
+                    <div class="glass rounded-2xl p-6 card-hover reveal" style="animation-delay: 0.3s">
+                        <div class="w-14 h-14 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-5">
+                            <i class="fas fa-shield-alt text-green-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Safety Agent</h3>
+                        <p class="text-sm text-gray-400 mb-4">Monitors outputs for accuracy, bias, and potential harmful content.</p>
+                        <div class="flex items-center gap-2 text-xs text-green-400">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Alignment checks</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Careers Section -->
+    <section id="careers" class="relative py-32 bg-gradient-to-b from-surface/30 to-dark">
+        <div class="w-full px-6 lg:px-12 xl:px-20">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div class="reveal">
+                        <span class="inline-block px-4 py-2 rounded-full glass text-xs text-green-400 uppercase tracking-widest mb-6">Careers</span>
+                        <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-6">
+                            Join the <span class="gradient-text">Intelligence Revolution</span>
+                        </h2>
+                        <p class="text-lg text-gray-400 mb-8 leading-relaxed">
+                            We're building the future of artificial intelligence. Join a team of 
+                            researchers, engineers, and visionaries working on the most challenging 
+                            problems in AI.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="glass rounded-xl p-4 flex items-center justify-between group cursor-pointer hover:border-arli-500/30 transition-all">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-arli-500/10 flex items-center justify-center">
+                                        <i class="fas fa-brain text-arli-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-white">Senior ML Researcher</div>
+                                        <div class="text-sm text-gray-500">Research Team • San Francisco</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-arrow-right text-gray-600 group-hover:text-arli-400 transition-colors"></i>
+                            </div>
+                            
+                            <div class="glass rounded-xl p-4 flex items-center justify-between group cursor-pointer hover:border-purple-500/30 transition-all">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                        <i class="fas fa-code text-purple-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-white">Distributed Systems Engineer</div>
+                                        <div class="text-sm text-gray-500">Engineering • Remote</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-arrow-right text-gray-600 group-hover:text-purple-400 transition-colors"></i>
+                            </div>
+                            
+                            <div class="glass rounded-xl p-4 flex items-center justify-between group cursor-pointer hover:border-pink-500/30 transition-all">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center">
+                                        <i class="fas fa-shield-alt text-pink-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-white">AI Safety Researcher</div>
+                                        <div class="text-sm text-gray-500">Safety Team • London</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-arrow-right text-gray-600 group-hover:text-pink-400 transition-colors"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8">
+                            <a href="#" class="text-arli-400 font-medium flex items-center gap-2 hover:gap-3 transition-all">
+                                View all positions <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="relative reveal" style="animation-delay: 0.2s">
+                        <div class="glass rounded-3xl p-8 glow-purple">
+                            <h3 class="text-xl font-bold text-white mb-6">Why ARLI?</h3>
+                            <div class="space-y-6">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-8 h-8 rounded-lg bg-arli-500/10 flex items-center justify-center flex-shrink-0 mt-1">
+                                        <i class="fas fa-flask text-arli-400 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-white mb-1">Research First</div>
+                                        <p class="text-sm text-gray-400">Publish your work and contribute to the open AI community.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-4">
+                                    <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 mt-1">
+                                        <i class="fas fa-users text-purple-400 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-white mb-1">World-Class Team</div>
+                                        <p class="text-sm text-gray-400">Work with researchers from DeepMind, OpenAI, and top universities.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-4">
+                                    <div class="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 mt-1">
+                                        <i class="fas fa-gem text-pink-400 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-white mb-1">Competitive Compensation</div>
+                                        <p class="text-sm text-gray-400">Top-of-market salaries, equity, and comprehensive benefits.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-4">
+                                    <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-1">
+                                        <i class="fas fa-globe text-green-400 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-white mb-1">Remote Friendly</div>
+                                        <p class="text-sm text-gray-400">Work from anywhere with flexible hours and async collaboration.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact/CTA Section -->
+    <section id="contact" class="relative py-32">
+        <div class="absolute inset-0 bg-gradient-to-r from-arli-500/5 via-purple-500/5 to-pink-500/5"></div>
+        <div class="relative w-full px-6 lg:px-12 xl:px-20">
+            <div class="max-w-4xl mx-auto text-center">
+                <span class="inline-block px-4 py-2 rounded-full glass text-xs text-arli-400 uppercase tracking-widest mb-6 reveal">Get Access</span>
+                <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 reveal">
+                    Experience the <span class="gradient-text">Future</span>
+                </h2>
+                <p class="text-lg text-gray-400 mb-10 max-w-2xl mx-auto reveal">
+                    Join our private beta and be among the first to experience collaborative AI agents. 
+                    Early access members receive priority support and input on product direction.
+                </p>
+                
+                <form class="max-w-md mx-auto space-y-4 reveal">
+                    <div class="flex gap-4">
+                        <input type="email" placeholder="Enter your email" class="flex-1 px-6 py-4 rounded-full bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-arli-500 transition-colors">
+                        <button type="submit" class="btn-primary px-8 py-4 rounded-full font-semibold text-white whitespace-nowrap">
+                            Join Waitlist
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        By joining, you agree to our Terms of Service and Privacy Policy.
+                    </p>
+                </form>
+                
+                <div class="mt-12 flex items-center justify-center gap-8 text-sm text-gray-500 reveal">
+                    <span class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        No credit card required
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        Early access benefits
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        Cancel anytime
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative py-16 border-t border-white/5">
+        <div class="w-full px-6 lg:px-12 xl:px-20">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-4 gap-12 mb-12">
+                    <!-- Brand -->
+                    <div class="md:col-span-2">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-arli-500 to-purple-600 flex items-center justify-center">
+                                <span class="text-white font-display font-bold text-lg">A</span>
+                            </div>
+                            <div>
+                                <span class="font-display font-bold text-xl text-white">ARLI</span>
+                                <span class="text-xs text-gray-600 ml-2">Automated Research & Linked Intelligence</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-6 max-w-sm">
+                            Building autonomous intelligence systems that reason, learn, and collaborate. 
+                            Pioneering the future of AGI through linked multi-agent systems.
+                        </p>
+                        <div class="flex gap-4">
+                            <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                                <i class="fab fa-discord"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Links -->
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Product</h4>
+                        <ul class="space-y-3">
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">Research Platform</a></li>
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">API</a></li>
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">Pricing</a></li>
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">Documentation</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Company</h4>
+                        <ul class="space-y-3">
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">About</a></li>
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">Research</a></li>
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">Careers</a></li>
+                            <li><a href="#" class="text-gray-400 text-sm hover:text-white transition-colors">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-gray-500 text-sm">
+                        © 2024 ARLI Research. All rights reserved.
+                    </p>
+                    <div class="flex gap-6">
+                        <a href="#" class="text-gray-500 text-sm hover:text-white transition-colors">Privacy</a>
+                        <a href="#" class="text-gray-500 text-sm hover:text-white transition-colors">Terms</a>
+                        <a href="#" class="text-gray-500 text-sm hover:text-white transition-colors">Cookies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Reveal animations
+        gsap.utils.toArray('.reveal').forEach((elem, i) => {
+            gsap.fromTo(elem, 
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    delay: elem.style.animationDelay ? parseFloat(elem.style.animationDelay) : 0,
+                    scrollTrigger: {
+                        trigger: elem,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse'
+                    }
+                }
+            );
+        });
+        
+        // Stats counter
+        gsap.utils.toArray('.stat-number').forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-target'));
+            gsap.to(stat, {
+                innerHTML: target,
+                duration: 2,
+                snap: { innerHTML: 1 },
+                scrollTrigger: {
+                    trigger: stat,
+                    start: 'top 85%'
+                }
+            });
+        });
+        
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        let lastScroll = 0;
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                navbar.classList.add('glass');
+            } else {
+                navbar.classList.remove('glass');
+            }
+            
+            lastScroll = currentScroll;
+        });
+        
+        // Mobile menu
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('translate-x-full');
+        });
+        
+        closeMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('translate-x-full');
+        });
+        
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('translate-x-full');
+            });
+        });
+        
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Neural network visualization
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Create nodes
+        const nodes = [];
+        const nodeCount = 30;
+        
+        for (let i = 0; i < nodeCount; i++) {
+            nodes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                radius: Math.random() * 2 + 1
+            });
+        }
+        
+        function animateNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw nodes
+            nodes.forEach(node => {
+                node.x += node.vx;
+                node.y += node.vy;
+                
+                if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+                if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.5)';
+                ctx.fill();
+            });
+            
+            // Draw connections
+            nodes.forEach((node1, i) => {
+                nodes.slice(i + 1).forEach(node2 => {
+                    const dx = node1.x - node2.x;
+                    const dy = node1.y - node2.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(node1.x, node1.y);
+                        ctx.lineTo(node2.x, node2.y);
+                        ctx.strokeStyle = `rgba(56, 189, 248, ${0.2 * (1 - distance / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                });
+            });
+            
+            requestAnimationFrame(animateNetwork);
+        }
+        animateNetwork();
+        
+        // Custom cursor (desktop)
+        if (window.matchMedia('(pointer: fine)').matches) {
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+                
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+                
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: 'forwards' });
+            });
+            
+            // Hover effects
+            document.querySelectorAll('a, button').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    cursorOutline.style.borderColor = 'rgba(56, 189, 248, 0.8)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursorOutline.style.borderColor = 'rgba(56, 189, 248, 0.5)';
+                });
+            });
+        }
+    </script>
+</body>
+</html>

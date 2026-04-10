@@ -7,7 +7,7 @@ Features:
 - Skill package format with metadata
 - Marketplace listing and discovery
 - Purchase and installation system
-- Revenue sharing (70% creator, 30% platform)
+- Revenue sharing (90% creator, 10% platform)
 - Skill versioning and updates
 """
 
@@ -343,6 +343,27 @@ class Marketplace:
         for listing_file in self.listings_dir.glob("*.json"):
             try:
                 data = json.loads(listing_file.read_text())
+                
+                # Convert string enums to actual enum values
+                # Handle both "published" and "SkillStatus.PUBLISHED" formats
+                if 'status' in data and isinstance(data['status'], str):
+                    status_str = data['status']
+                    if '.' in status_str:
+                        status_str = status_str.split('.')[-1]
+                    try:
+                        data['status'] = SkillStatus(status_str.lower())
+                    except ValueError:
+                        pass
+                
+                if 'category' in data and isinstance(data['category'], str):
+                    cat_str = data['category']
+                    if '.' in cat_str:
+                        cat_str = cat_str.split('.')[-1]
+                    try:
+                        data['category'] = SkillCategory(cat_str.lower())
+                    except ValueError:
+                        pass
+                
                 skill = SkillMetadata(**data)
                 self.listings[skill.skill_id] = skill
             except:
@@ -557,8 +578,8 @@ class Marketplace:
                     continue
                 
                 price = purchase["price_paid"]
-                platform_fee = price * 0.30  # 30% platform fee
-                creator_earnings = price * 0.70  # 70% to creator
+                platform_fee = price * 0.10  # 10% platform fee
+                creator_earnings = price * 0.90  # 90% to creator
                 
                 total_sales += price
                 total_platform_fee += platform_fee
@@ -777,7 +798,7 @@ if __name__ == "__main__":
     print("\n8. Revenue statistics...")
     stats = marketplace.get_revenue_stats()
     print(f"   Total sales: ${stats['total_sales']:.2f}")
-    print(f"   Platform fee (30%): ${stats['total_platform_fee']:.2f}")
-    print(f"   Creator earnings (70%): ${stats['total_creator_earnings']:.2f}")
+    print(f"   Platform fee (10%): ${stats['total_platform_fee']:.2f}")
+    print(f"   Creator earnings (90%): ${stats['total_creator_earnings']:.2f}")
     
     print("\n✅ Skills Marketplace tests complete!")

@@ -1,83 +1,9 @@
-version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:16-alpine
-    container_name: arli-postgres
+  auth:
+    image: auth-service:latest
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: arli
+      - JWT_SECRET=${JWT_SECRET}  # From shared knowledge
+      - TOKEN_EXPIRY=24h
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # Redis Cache & Queue
-  redis:
-    image: redis:7-alpine
-    container_name: arli-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # API Server
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    container_name: arli-api
-    ports:
-      - "3100:3100"
-    environment:
-      - NODE_ENV=development
-      - PORT=3100
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/arli?schema=public
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - JWT_SECRET=dev-secret-key-arli-2024
-      - FRONTEND_URL=http://localhost:3000
-      - APP_URL=http://localhost:3100
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: pnpm --filter api dev
-
-  # Web Frontend
-  web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-    container_name: arli-web
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:3100
-    depends_on:
-      - api
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: pnpm --filter web dev
-
-volumes:
-  postgres_data:
-  redis_data:
+      - "8080:8080"

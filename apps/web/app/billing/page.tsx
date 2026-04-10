@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react'
 import { useAuth, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { CREDIT_PACKAGES } from '@arli/types'
+// import { CREDIT_PACKAGES } from '@arli/types'
+const CREDIT_PACKAGES = [
+  { id: 'starter', name: 'Starter', credits: 1000, price: 10 },
+  { id: 'growth', name: 'Growth', credits: 5000, price: 45 },
+  { id: 'enterprise', name: 'Enterprise', credits: 20000, price: 150 }
+]
 
 interface Company {
   id: string
@@ -121,7 +126,7 @@ export default function BillingPage() {
             <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
               Dashboard
             </Link>
-            <Link href="/companies" className="text-gray-600 hover:text-gray-900">
+            <Link href="/companies" as="/companies" className="text-gray-600 hover:text-gray-900">
               Companies
             </Link>
             <UserButton afterSignOutUrl="/" />

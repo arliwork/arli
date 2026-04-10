@@ -1,62 +1,67 @@
-# Dependencies
-node_modules/
-.pnpm-store/
-
 # Environment
 .env
 .env.local
 .env.*.local
-
-# Build outputs
-dist/
-build/
-.next/
-.turbo/
-
-# Database
-*.db
-*.sqlite
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Testing
-coverage/
-
-# Temporary files
-*.tmp
-*.temp
 
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.Python
+venv/
+env/
+ENV/
+.venv
 
-# ARLI Agent Memory (local data)
-.arli/memory/
-agents/.arli/
-agents/__pycache__/
-agents/test_output.txt
+# Node
+node_modules/
+.next/
+out/
+build/
+dist/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Test artifacts (generated during tests)
-auth*.py
-login.py
-db_optimization.sql
-LoginForm.jsx
-build_*.py
-create_*.py
-implement_*.py
-add_*.py
+# Database
+*.sqlite
+*.sqlite3
+postgres_data/
+redis_data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# SSL certificates
+ssl/
+*.crt
+*.key
+*.pem
+
+# Docker
+.dockerignore
+
+# ARLI specific
+.arli/
+!arli/.gitkeep
+
+# Temporary
+*.tmp
+*.bak
+*.pid
+*.seed
+*.pid.lock

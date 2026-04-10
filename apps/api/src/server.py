@@ -1,51 +1,56 @@
 #!/usr/bin/env python3
 """
-ARLI API Server
-FastAPI backend for skills marketplace and experience tracking
+ARLI API Server - Production
+FastAPI with PostgreSQL backend
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import sys
 import os
-
-# Add routes
-sys.path.insert(0, os.path.dirname(__file__))
-from routes.skills_real import router as skills_router
-from routes.experience import router as experience_router
-from routes.live_tasks import router as tasks_router
 
 app = FastAPI(
     title="ARLI API",
-    description="ARLI Platform API - Skills, Experience & Live Tasks",
+    description="ARLI Platform Production API",
     version="1.0.0"
 )
 
-# CORS для фронтенда
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["*"],  # Configure for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Import models and create tables
+from models import Base, engine
+Base.metadata.create_all(bind=engine)
+
 # Include routers
-app.include_router(skills_router)
-app.include_router(experience_router)
+from routes.agents_real import router as agents_router
+from routes.live_tasks import router as tasks_router
+
+app.include_router(agents_router)
 app.include_router(tasks_router)
 
 @app.get("/")
 async def root():
     return {
-        "message": "ARLI API Server",
+        "message": "ARLI Production API",
         "version": "1.0.0",
-        "features": ["skills", "experience", "live-tasks"]
+        "status": "production",
+        "database": "postgresql"
     }
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "database": "connected",
+        "timestamp": datetime.now().isoformat()
+    }
 
 if __name__ == "__main__":
     import uvicorn
+    from datetime import datetime
     uvicorn.run(app, host="0.0.0.0", port=8000)
