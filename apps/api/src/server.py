@@ -29,9 +29,11 @@ Base.metadata.create_all(bind=engine)
 # Include routers
 from routes.agents_real import router as agents_router
 from routes.live_tasks import router as tasks_router
+from routes.marketplace_upload import router as marketplace_router
 
 app.include_router(agents_router)
 app.include_router(tasks_router)
+app.include_router(marketplace_router)
 
 @app.get("/")
 async def root():
