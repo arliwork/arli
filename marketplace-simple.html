@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arli Marketplace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 { color: #666; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .stat-card p { font-size: 2rem; font-weight: bold; color: #667eea; }
+        .upload-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .upload-section h2 { margin-bottom: 1rem; }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #5568d3; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .agent-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .agent-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .agent-header h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .tier-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .tier-COMMON { background: #e5e7eb; color: #374151; }
+        .tier-UNCOMMON { background: #d1fae5; color: #065f46; }
+        .tier-RARE { background: #dbeafe; color: #1e40af; }
+        .tier-EPIC { background: #e9d5ff; color: #7c3aed; }
+        .tier-LEGENDARY { background: #fef3c7; color: #92400e; }
+        .agent-stats {
+            padding: 1rem 1.5rem;
+            background: #f9fafb;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+        .agent-stats div p:first-child {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .agent-stats div p:last-child {
+            font-size: 0.75rem;
+            color: #666;
+        }
+        .agent-skills {
+            padding: 1rem 1.5rem;
+        }
+        .skill-tag {
+            display: inline-block;
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin: 0.25rem;
+        }
+        .agent-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #059669;
+        }
+        .result-message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        .result-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .result-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Arli Marketplace</h1>
+        <p>Buy and sell trained AI agents</p>
+    </div>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <h3>Total Agents</h3>
+                <p id="total-agents">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Value</h3>
+                <p id="total-value">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Your Agents</h3>
+                <p>0</p>
+            </div>
+        </div>
+
+        <!-- Upload -->
+        <div class="upload-section">
+            <h2>📤 List Your Agent</h2>
+            <form id="upload-form">
+                <div class="form-group">
+                    <label>Agent JSON File</label>
+                    <input type="file" id="agent-file" accept=".json" required>
+                </div>
+                <div class="form-group">
+                    <label>Price (USD)</label>
+                    <input type="number" id="price" placeholder="100" min="1" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" rows="2" placeholder="Describe your agent..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Your ICP Wallet (for payments)</label>
+                    <input type="text" id="wallet" placeholder="rdmx6-jaaaa-aaaaa-aaadq-cai">
+                </div>
+                <button type="submit" class="btn">List on Marketplace</button>
+            </form>
+            <div id="upload-result"></div>
+        </div>
+
+        <!-- Agents Grid -->
+        <h2 style="margin-bottom: 1rem;">🛒 Available Agents</h2>
+        <div class="agents-grid" id="agents-grid">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://157.180.88.143:8002';
+
+        // Load stats and agents
+        async function loadData() {
+            try {
+                // Load stats
+                const statsRes = await fetch(`${API_URL}/stats`);
+                const stats = await statsRes.json();
+                document.getElementById('total-agents').textContent = stats.total_agents;
+                document.getElementById('total-value').textContent = '$' + stats.total_value_usd?.toLocaleString();
+
+                // Load agents
+                const agentsRes = await fetch(`${API_URL}/agents`);
+                const agents = await agentsRes.json();
+                displayAgents(agents);
+            } catch (e) {
+                console.error('Failed to load:', e);
+                document.getElementById('agents-grid').innerHTML = 
+                    '<p style="color: red;">Failed to connect to marketplace API</p>';
+            }
+        }
+
+        function displayAgents(agents) {
+            const grid = document.getElementById('agents-grid');
+            if (agents.length === 0) {
+                grid.innerHTML = '<p>No agents listed yet. Be the first!</p>';
+                return;
+            }
+
+            grid.innerHTML = agents.map(agent => `
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <h3>${agent.name}</h3>
+                        <span class="tier-badge tier-${agent.tier}">${agent.tier}</span>
+                    </div>
+                    <div class="agent-stats">
+                        <div>
+                            <p>${agent.level}</p>
+                            <p>Level</p>
+                        </div>
+                        <div>
+                            <p>${agent.xp}</p>
+                            <p>XP</p>
+                        </div>
+                        <div>
+                            <p>${agent.capabilities?.length || 0}</p>
+                            <p>Skills</p>
+                        </div>
+                    </div>
+                    <div class="agent-skills">
+                        ${(agent.capabilities || []).slice(0, 3).map(c => 
+                            `<span class="skill-tag">${c.name}</span>`
+                        ).join('')}
+                    </div>
+                    <div class="agent-footer">
+                        <div class="price">$${agent.price}</div>
+                        <button class="btn btn-success" onclick="buyAgent('${agent.id}')">Buy</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Upload form
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('upload-result');
+            resultDiv.innerHTML = '<p>Uploading...</p>';
+
+            const file = document.getElementById('agent-file').files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('price', document.getElementById('price').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('seller_wallet', document.getElementById('wallet').value);
+
+            try {
+                const res = await fetch(`${API_URL}/agents/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result-message result-success">
+                            ✅ Agent listed successfully!<br>
+                            ID: ${data.agent_id}<br>
+                            <a href="${data.listing_url}">View Listing</a>
+                        </div>
+                    `;
+                    loadData(); // Refresh
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result-message result-error">
+                            ❌ ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `
+                    <div class="result-message result-error">
+                        ❌ Upload failed: ${e.message}
+                    </div>
+                `;
+            }
+        });
+
+        async function buyAgent(id) {
+            alert('Purchase feature coming soon! Agent ID: ' + id);
+        }
+
+        // Load on start
+        loadData();
+    </script>
+</body>
+</html>
