@@ -32,20 +32,21 @@ MODEL_REGISTRY = {
     "kimi/kimi-k2.5": {"provider": "openrouter", "credit_multiplier": 1.3},
     "thudm/glm-4.5": {"provider": "openrouter", "credit_multiplier": 1.5},
     "qwen/qwen3-8b": {"provider": "openrouter", "credit_multiplier": 0.8},
+    # Kimi Code (direct)
+    "kimi-k2": {"provider": "kimi", "credit_multiplier": 1.8},
+    "kimi-k1.6": {"provider": "kimi", "credit_multiplier": 2.0},
     # Local/Ollama
     "llama3.1": {"provider": "ollama", "credit_multiplier": 0.1},
     "codellama": {"provider": "ollama", "credit_multiplier": 0.1},
     "deepseek-coder": {"provider": "ollama", "credit_multiplier": 0.1},
-    # Dummy fallback
-    "dummy": {"provider": "dummy", "credit_multiplier": 0.0},
 }
 
 DEFAULT_MODELS = {
-    "coding": "anthropic/claude-3.5-sonnet",
-    "reasoning": "deepseek/deepseek-chat",
-    "simple": "google/gemini-2.0-flash-001",
-    "creative": "anthropic/claude-3.5-sonnet",
-    "default": "anthropic/claude-3.5-sonnet",
+    "coding": "kimi-k2",
+    "reasoning": "kimi-k2",
+    "simple": "google/gemini-3.1-flash",
+    "creative": "kimi-k2",
+    "default": "kimi-k2",
 }
 
 
@@ -67,6 +68,8 @@ class LLMClient:
         self.openai_key = os.getenv("OPENAI_API_KEY", "")
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
         self.openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
+        self.kimi_key = os.getenv("KIMI_API_KEY", "")
+        self.kimi_base_url = os.getenv("KIMI_BASE_URL", "https://api.kimi.com/coding")
         self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
         self.session: Optional[aiohttp.ClientSession] = None
 
@@ -90,8 +93,8 @@ class LLMClient:
                 return True
             except Exception:
                 return False
-        elif provider == "dummy":
-            return True
+        elif provider == "kimi":
+            return bool(self.kimi_key)
         return False
 
     def resolve_model(self, task_type: str = "default", model: Optional[str] = None) -> str:
@@ -105,7 +108,7 @@ class LLMClient:
         for m, cfg in MODEL_REGISTRY.items():
             if self._provider_available(cfg["provider"]):
                 return m
-        return "dummy"
+        raise RuntimeError("No LLM provider configured. Set KIMI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, or OLLAMA_URL.")
 
     def _estimate_tokens(self, text: str) -> int:
         return max(1, len(text) // 4)
@@ -137,12 +140,12 @@ class LLMClient:
         prompt_text = json.dumps(messages)
         prompt_tokens = self._estimate_tokens(prompt_text)
 
-        if provider == "dummy":
-            response = self._call_dummy(messages, task_type)
-        elif provider == "openai":
+        if provider == "openai":
             response = await self._call_openai(resolved, messages, temperature, max_tokens, tools)
         elif provider == "anthropic":
             response = await self._call_anthropic(resolved, messages, temperature, max_tokens, tools)
+        elif provider == "kimi":
+            response = await self._call_kimi(resolved, messages, temperature, max_tokens, tools)
         elif provider == "ollama":
             response = await self._call_ollama(resolved, messages, temperature, max_tokens)
         else:
@@ -234,6 +237,49 @@ class LLMClient:
             data = await resp.json()
             if resp.status != 200:
                 raise RuntimeError(f"Anthropic error: {data}")
+            content = data["content"][0]["text"]
+            return {"content": content, "raw": data}
+
+    async def _call_kimi(
+        self,
+        model: str,
+        messages: List[Dict[str, str]],
+        temperature: float,
+        max_tokens: int,
+        tools: Optional[List[Dict]] = None,
+    ) -> Dict:
+        if not self.kimi_key:
+            raise ValueError("KIMI_API_KEY not configured")
+        session = await self._get_session()
+        # Kimi Code uses Anthropic-compatible format
+        system_msg = ""
+        chat_messages = []
+        for m in messages:
+            if m["role"] == "system":
+                system_msg = m["content"]
+            else:
+                chat_messages.append(m)
+        payload: Dict[str, Any] = {
+            "model": model,
+            "messages": chat_messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        if system_msg:
+            payload["system"] = system_msg
+        if tools:
+            payload["tools"] = tools
+        async with session.post(
+            f"{self.kimi_base_url}/v1/messages",
+            headers={
+                "Authorization": f"Bearer {self.kimi_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+        ) as resp:
+            data = await resp.json()
+            if resp.status != 200:
+                raise RuntimeError(f"Kimi error: {data}")
             content = data["content"][0]["text"]
             return {"content": content, "raw": data}
 
@@ -334,5 +380,5 @@ def get_available_models() -> Dict[str, Any]:
     return {
         "registry": MODEL_REGISTRY,
         "defaults": DEFAULT_MODELS,
-        "providers": ["openai", "anthropic", "openrouter", "ollama", "dummy"],
+        "providers": ["openai", "anthropic", "openrouter", "ollama", "kimi"],
     }
