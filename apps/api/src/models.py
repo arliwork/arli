@@ -18,6 +18,10 @@ class User(Base):
     principal = Column(String(255), unique=True, nullable=True)
     wallet_address = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
+    # Credit system
+    credits_balance = Column(Numeric(18, 4), default=500)  # Free tier starts with 500
+    credits_spent = Column(Numeric(18, 4), default=0)
+    subscription_tier = Column(String(50), default="free")  # free, plus, pro, enterprise
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
@@ -157,3 +161,23 @@ class Achievement(Base):
     unlocked_at = Column(DateTime(timezone=True), server_default=func.now())
     
     agent = relationship("Agent", back_populates="achievements")
+
+class ScheduledWorkflow(Base):
+    __tablename__ = "scheduled_workflows"
+    
+    id = Column(String, primary_key=True, default=generate_uuid)
+    schedule_id = Column(String(255), unique=True, nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    # Cron expression or interval like "daily", "hourly", "0 9 * * *"
+    schedule = Column(String(100), nullable=False)
+    pipeline_type = Column(String(100), nullable=False)
+    context = Column(JSON, default=dict)
+    owner_id = Column(String, ForeignKey("users.id"), nullable=False)
+    is_active = Column(Boolean, default=True)
+    last_run_at = Column(DateTime(timezone=True), nullable=True)
+    next_run_at = Column(DateTime(timezone=True), nullable=True)
+    run_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    owner = relationship("User", lazy="selectin")

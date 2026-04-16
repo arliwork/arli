@@ -160,6 +160,46 @@ async def buy_agent(
         seller_receives=seller_receives,
     )
 
+
+@router.post("/run-browser-extract")
+async def browser_extract(data: dict):
+    """Extract content from a webpage"""
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "agents"))
+    from runtime import AgentRuntime
+    
+    runtime = AgentRuntime(agent_id="browser-agent", workspace=".")
+    result = await runtime.browser_extract(data.get("url", ""))
+    return result
+
+@router.post("/run-browser-search")
+async def browser_search(data: dict):
+    """Search the web"""
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "agents"))
+    from runtime import AgentRuntime
+    
+    runtime = AgentRuntime(agent_id="browser-agent", workspace=".")
+    result = await runtime.browser_search(data.get("query", ""))
+    return result
+
+@router.post("/run-research")
+async def run_research(data: dict):
+    """Full research workflow"""
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "agents"))
+    from runtime import AgentRuntime
+    
+    runtime = AgentRuntime(agent_id="research-agent", workspace=".")
+    result = await runtime.research_task(
+        data.get("query", ""),
+        sources=data.get("sources", 3)
+    )
+    return result
+
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_agent(
     agent_id: str,

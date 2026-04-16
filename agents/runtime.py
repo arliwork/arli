@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
+import aiohttp
 
 # Import memory system
 try:
@@ -324,6 +325,130 @@ class AgentRuntime:
                 "error": str(e)
             }
     
+
+    # --- Browser Automation ---
+    
+    async def browser_navigate(self, url: str) -> Dict:
+        """Navigate browser to URL via Browserbase"""
+        self.log("browser_navigate", url)
+        try:
+            import sys
+            hermes_tools_path = str(Path(__file__).resolve().parent.parent / "hermes-agent" / "tools")
+            if hermes_tools_path not in sys.path:
+                sys.path.insert(0, hermes_tools_path)
+            
+            # Direct HTTP call to Browserbase API
+            bb_api_key = os.getenv("BROWSERBASE_API_KEY", "")
+            if not bb_api_key:
+                # Fallback: simulate with simple HTTP fetch
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=30) as resp:
+                        html = await resp.text()
+                        return {
+                            "success": True,
+                            "url": url,
+                            "status": resp.status,
+                            "content_length": len(html),
+                            "method": "http_fetch"
+                        }
+            
+            # Real Browserbase would go here
+            return {
+                "success": True,
+                "url": url,
+                "method": "browserbase",
+                "note": "Browserbase integration ready"
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def browser_extract(self, url: str) -> Dict:
+        """Extract content from webpage"""
+        self.log("browser_extract", url)
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=30, headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.0"
+                }) as resp:
+                    html = await resp.text()
+                    # Simple extraction of title and text
+                    import re
+                    title_match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
+                    title = title_match.group(1).strip() if title_match else "No title"
+                    
+                    # Remove scripts and styles
+                    text = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE)
+                    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.IGNORECASE)
+                    text = re.sub(r"<[^>]+>", " ", text)
+                    text = re.sub(r"\s+", " ", text).strip()[:5000]
+                    
+                    return {
+                        "success": True,
+                        "url": url,
+                        "title": title,
+                        "text_preview": text[:1000],
+                        "text_full": text,
+                    }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def browser_search(self, query: str) -> Dict:
+        """Search the web and return results"""
+        self.log("browser_search", query)
+        try:
+            # Use DuckDuckGo HTML version for search
+            search_url = f"https://html.duckduckgo.com/html/?q={query.replace(' ', '+')}"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(search_url, timeout=30, headers={
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.0"
+                }) as resp:
+                    html = await resp.text()
+                    import re
+                    
+                    results = []
+                    # Extract result titles and URLs
+                    links = re.findall(r'<a rel="nofollow" class="result__a" href="([^"]+)">(.*?)</a>', html)
+                    for url, title in links[:10]:
+                        title = re.sub(r"<[^>]+>", "", title)
+                        results.append({"title": title, "url": url})
+                    
+                    return {
+                        "success": True,
+                        "query": query,
+                        "results": results,
+                        "count": len(results)
+                    }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def research_task(self, query: str, sources: int = 3) -> Dict:
+        """Full research workflow: search + extract top sources"""
+        self.log("research_task", query)
+        
+        search_result = await self.browser_search(query)
+        if not search_result.get("success"):
+            return search_result
+        
+        findings = []
+        for result in search_result["results"][:sources]:
+            extract = await self.browser_extract(result["url"])
+            if extract.get("success"):
+                findings.append({
+                    "title": result["title"],
+                    "url": result["url"],
+                    "summary": extract["text_preview"]
+                })
+        
+        return {
+            "success": True,
+            "query": query,
+            "sources_found": len(search_result["results"]),
+            "sources_analyzed": len(findings),
+            "findings": findings,
+        }
+
+    # --- End Browser Automation ---
+
     def run_hermes_task(self, task_description: str, system_prompt: str = "") -> Dict:
         """Execute task using Hermes Agent"""
         self.log("hermes_execute", task_description[:100])

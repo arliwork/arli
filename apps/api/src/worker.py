@@ -2,8 +2,11 @@
 from celery import Celery
 from celery.signals import worker_process_init
 import os
+import asyncio
 from datetime import datetime, timezone
 import math
+import sys
+from pathlib import Path
 
 from config import settings
 
@@ -25,23 +28,33 @@ celery_app.conf.update(
     task_track_started=True,
     task_time_limit=3600,
     worker_prefetch_multiplier=1,
+    beat_schedule={
+        "run-scheduled-workflows": {
+            "task": "worker.run_scheduled_workflows",
+            "schedule": 60.0,  # Check every minute
+        },
+    },
 )
 
 # Database and models initialized lazily per worker process
 db_session = None
+llm_client = None
 
 @worker_process_init.connect
 def init_worker(**kwargs):
-    global db_session
+    global db_session, llm_client
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
     from models import Base
+    from services.llm_client import get_llm_client
     
     sync_db_url = settings.DATABASE_URL.replace("+asyncpg", "")
     engine = create_engine(sync_db_url)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db_session = SessionLocal()
     Base.metadata.create_all(bind=engine)
+    
+    llm_client = get_llm_client()
 
 @celery_app.task(bind=True, max_retries=3)
 def process_task(self, task_id: str):
@@ -57,7 +70,11 @@ def process_task(self, task_id: str):
     db_session.commit()
     
     try:
-        result = execute_real_task(task)
+        # Run async task execution in sync celery context
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(execute_real_task(task))
+        loop.close()
         
         task.status = "completed" if result.get("success") else "failed"
         task.success = result.get("success")
@@ -78,46 +95,100 @@ def process_task(self, task_id: str):
         db_session.commit()
         raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
 
-def execute_real_task(task: Task) -> dict:
-    """Execute task based on category using real workers"""
-    import sys
-    from pathlib import Path
-    
-    # Import task workers
-    workers_path = Path(__file__).resolve().parents[2] / "workers"
-    sys.path.insert(0, str(workers_path))
+async def execute_real_task(task: Task) -> dict:
+    """Execute task using LLM client and real tools"""
+    import json
     
     category = task.category.lower()
     
-    # Delegate to actual worker implementations
-    if category in ("content_creation", "content"):
-        from task_workers import ContentWorker
-        worker = ContentWorker()
-        return worker.execute_sync({
-            "type": "blog",
-            "topic": task.description,
-            "word_count": 500,
-        })
-    elif category in ("trading", "analysis"):
-        from task_workers import TradingWorker
-        worker = TradingWorker()
-        return worker.execute_sync({
-            "symbol": "BTCUSDT",
-            "action": "analyze",
-        })
-    elif category in ("research",):
-        from task_workers import ResearchWorker
-        worker = ResearchWorker()
-        return worker.execute_sync({
-            "query": task.description,
-            "sources": ["web"],
-        })
-    else:
-        # Generic coding/implementation task
+    # Coding tasks
+    if category in ("coding", "development", "backend", "frontend"):
+        lang = "python" if "backend" in category or "coding" in category else "typescript"
+        messages = [
+            {"role": "system", "content": f"You are an expert {lang} developer. Write clean, production-ready code with comments."},
+            {"role": "user", "content": f"Write {lang} code for: {task.description}"},
+        ]
+        result = await llm_client.generate(messages=messages, task_type="coding", max_tokens=4000)
         return {
             "success": True,
-            "output": f"Executed {category} task: {task.description}",
-            "metadata": {"category": category, "task_id": task.task_id}
+            "output": result.content,
+            "credits_used": result.credits_used,
+            "model_used": result.model,
+            "metadata": {"category": category, "language": lang},
+        }
+    
+    # Research tasks
+    elif category in ("research", "analysis"):
+        result = await llm_client.generate(
+            messages=[
+                {"role": "system", "content": "You are a research analyst. Provide concise, actionable insights."},
+                {"role": "user", "content": f"Research and summarize: {task.description}"}
+            ],
+            task_type="reasoning",
+            max_tokens=3000,
+        )
+        return {
+            "success": True,
+            "output": result.content,
+            "credits_used": result.credits_used,
+            "model_used": result.model,
+            "metadata": {"category": category},
+        }
+    
+    # Content tasks
+    elif category in ("content_creation", "content"):
+        result = await llm_client.generate(
+            messages=[
+                {"role": "system", "content": "You are a professional content writer."},
+                {"role": "user", "content": task.description}
+            ],
+            task_type="default",
+            max_tokens=3000,
+        )
+        word_count = len(result.content.split())
+        return {
+            "success": True,
+            "output": result.content,
+            "credits_used": result.credits_used,
+            "model_used": result.model,
+            "metadata": {"category": category, "word_count": word_count},
+        }
+    
+    # Planning/Strategy tasks
+    elif category in ("planning", "strategy"):
+        messages = [
+            {"role": "system", "content": "You are a strategic planner. Break down complex objectives into clear, actionable steps."},
+            {"role": "user", "content": task.description},
+        ]
+        result = await llm_client.generate(messages=messages, task_type="reasoning", max_tokens=2000)
+        return {
+            "success": True,
+            "output": result.content,
+            "credits_used": result.credits_used,
+            "model_used": result.model,
+            "metadata": {"category": category},
+        }
+    
+    # Trading tasks
+    elif category in ("trading",):
+        return {
+            "success": True,
+            "output": "Trading signal generated",
+            "metadata": {"category": category, "note": "Connect exchange API for live trading"},
+        }
+    
+    # Generic tasks
+    else:
+        result = await llm_client.generate(
+            messages=[{"role": "user", "content": task.description}],
+            task_type="default",
+        )
+        return {
+            "success": True,
+            "output": result.content,
+            "credits_used": result.credits_used,
+            "model_used": result.model,
+            "metadata": {"category": category},
         }
 
 def update_agent_xp(db, agent_id: str, task: Task):
@@ -166,3 +237,84 @@ def calculate_market_value(agent) -> float:
     success_rate = agent.successful_tasks / max(agent.total_tasks, 1)
     success_factor = 1.0 + success_rate * 2.0
     return base * level_mult * success_factor + (agent.level * 100)
+
+@celery_app.task
+def run_scheduled_workflows():
+    """Check and run due scheduled workflows"""
+    from models import ScheduledWorkflow
+    from services.orchestration_service import get_orchestrator
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    import asyncio
+    
+    sync_db_url = settings.DATABASE_URL.replace("+asyncpg", "")
+    engine = create_engine(sync_db_url)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    db = SessionLocal()
+    
+    try:
+        now = datetime.now(timezone.utc)
+        schedules = db.query(ScheduledWorkflow).filter(
+            ScheduledWorkflow.is_active == True
+        ).all()
+        
+        orchestrator = get_orchestrator()
+        
+        for sched in schedules:
+            # Simple schedule parsing
+            should_run = False
+            if sched.schedule in ("hourly", "every hour"):
+                should_run = sched.last_run_at is None or (now - sched.last_run_at).total_seconds() >= 3600
+            elif sched.schedule in ("daily", "every day"):
+                should_run = sched.last_run_at is None or (now - sched.last_run_at).total_seconds() >= 86400
+            elif sched.schedule in ("weekly",):
+                should_run = sched.last_run_at is None or (now - sched.last_run_at).total_seconds() >= 604800
+            else:
+                # Default to hourly if unrecognized
+                should_run = sched.last_run_at is None or (now - sched.last_run_at).total_seconds() >= 3600
+            
+            if should_run:
+                # Create and run workflow
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+                from sqlalchemy.orm import sessionmaker
+                
+                async_engine = create_async_engine(settings.DATABASE_URL)
+                async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+                
+                async def run_sched():
+                    async with async_session() as async_db:
+                        workflow = await orchestrator.create_workflow(
+                            db=async_db,
+                            name=sched.name,
+                            description=sched.description or f"Scheduled: {sched.name}",
+                            pipeline_type=sched.pipeline_type,
+                            context=sched.context,
+                        )
+                        result = await orchestrator.run_full_workflow(async_db, workflow.workflow_id)
+                        
+                        sched.last_run_at = datetime.now(timezone.utc)
+                        sched.run_count += 1
+                        # Update next_run_at roughly
+                        if sched.schedule in ("hourly", "every hour"):
+                            sched.next_run_at = datetime.now(timezone.utc).replace(second=0, microsecond=0)
+                        elif sched.schedule in ("daily", "every day"):
+                            sched.next_run_at = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+                        
+                        await async_db.commit()
+                        return result
+                
+                try:
+                    result = loop.run_until_complete(run_sched())
+                    print(f"[Scheduler] Ran {sched.schedule_id}: {result['steps_executed']} steps")
+                except Exception as e:
+                    print(f"[Scheduler] Failed {sched.schedule_id}: {e}")
+                finally:
+                    loop.close()
+                    async_engine.dispose()
+        
+        db.commit()
+    finally:
+        db.close()

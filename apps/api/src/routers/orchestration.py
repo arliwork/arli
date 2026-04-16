@@ -1,3 +1,4 @@
+from datetime import datetime
 import uuid
 """Autonomous company orchestration routes"""
 from fastapi import APIRouter, HTTPException, status, Depends
@@ -76,6 +77,69 @@ async def run_workflow(
     orchestrator = get_orchestrator()
     result = await orchestrator.run_full_workflow(db, workflow_id)
     return result
+
+
+@router.post("/execute-task")
+async def execute_single_task(
+    data: dict,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Execute a single task directly via orchestrator with LLM"""
+    from services.orchestration_service import Task
+    from services.llm_client import get_llm_client
+    
+    role = data.get("role", "backend-dev")
+    description = data.get("description", "")
+    
+    # Create a minimal Task-like object
+    task = Task(
+        task_id=f"direct_{role}_{int(datetime.now().timestamp())}",
+        category=data.get("category", "general"),
+        description=description,
+        assigned_role=role,
+        workflow_id=data.get("workflow_id"),
+    )
+    
+    orchestrator = get_orchestrator()
+    result = await orchestrator._execute_task(task)
+    return result
+
+
+@router.post("/templates/{template_key}/launch", response_model=dict)
+async def launch_company_template(
+    template_key: str,
+    data: dict = None,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Launch a company from a 1-click template"""
+    orchestrator = get_orchestrator()
+    result = await orchestrator.launch_template(
+        db=db,
+        template_key=template_key,
+        user_id=current_user.id,
+        custom_name=(data or {}).get("custom_name"),
+    )
+    return result
+
+@router.get("/templates", response_model=dict)
+async def list_templates():
+    """List available company templates"""
+    from services.orchestration_service import COMPANY_TEMPLATES
+    return {
+        "templates": [
+            {
+                "key": key,
+                "name": tpl["name"],
+                "description": tpl["description"],
+                "pipeline_type": tpl["pipeline_type"],
+                "agent_count": len(tpl["agents"]),
+                "agents": [{"role": a["role"], "name": a["name"]} for a in tpl["agents"]],
+            }
+            for key, tpl in COMPANY_TEMPLATES.items()
+        ]
+    }
 
 @router.get("/pipelines")
 async def list_pipelines():

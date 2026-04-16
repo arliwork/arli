@@ -216,6 +216,7 @@ function NavHeader() {
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm">Dashboard</Link>
           <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 text-sm">Marketplace</Link>
           <Link href="/skills" className="text-gray-600 hover:text-gray-900 text-sm">Skills</Link>
+          <Link href="/workspace" className="text-gray-600 hover:text-gray-900 text-sm">Workspace</Link>
         </div>
       </div>
     </header>

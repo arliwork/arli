@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from config import settings
 from database import engine, Base
-from routers import auth, agents, tasks, marketplace, orchestration, stats, companies
+from routers import auth, agents, tasks, marketplace, orchestration, stats, companies, workspaces, scheduler, credits
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,6 +44,9 @@ app.include_router(marketplace.router)
 app.include_router(orchestration.router)
 app.include_router(stats.router)
 app.include_router(companies.router)
+app.include_router(workspaces.router)
+app.include_router(scheduler.router)
+app.include_router(credits.router)
 
 if __name__ == "__main__":
     import uvicorn

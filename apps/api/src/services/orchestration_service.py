@@ -7,6 +7,7 @@ import sys
 import json
 import uuid
 import asyncio
+from services.llm_client import get_llm_client, LLMResponse
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from pathlib import Path
@@ -34,6 +35,56 @@ except ImportError:
 from models import Workflow, Task, Agent
 
 # Agent role definitions for the autonomous company
+# Company templates for 1-click launch
+COMPANY_TEMPLATES = {
+    "sales": {
+        "name": "Sales Company",
+        "description": "AI-powered sales team for lead generation and outreach",
+        "pipeline_type": "plan-feature",
+        "agents": [
+            {"role": "ceo", "name": "Sales Director", "capabilities": ["strategy", "planning", "delegation"]},
+            {"role": "researcher", "name": "Lead Researcher", "capabilities": ["research", "data-analysis", "linkedin-scraping"]},
+            {"role": "backend-dev", "name": "Outreach Agent", "capabilities": ["email-automation", "crm-integration", "personalization"]},
+            {"role": "devops", "name": "CRM Manager", "capabilities": ["salesforce", "hubspot", "reporting"]},
+        ],
+    },
+    "dev": {
+        "name": "Dev Agency",
+        "description": "Full-stack AI development team",
+        "pipeline_type": "plan-feature",
+        "agents": [
+            {"role": "ceo", "name": "Tech Lead", "capabilities": ["strategy", "planning", "delegation"]},
+            {"role": "architect", "name": "System Architect", "capabilities": ["system-design", "architecture-review"]},
+            {"role": "backend-dev", "name": "Backend Engineer", "capabilities": ["api-development", "database", "testing"]},
+            {"role": "frontend-dev", "name": "Frontend Engineer", "capabilities": ["ui-development", "react", "styling"]},
+            {"role": "devops", "name": "DevOps Engineer", "capabilities": ["deployment", "ci-cd", "monitoring"]},
+        ],
+    },
+    "trading": {
+        "name": "Trading Desk",
+        "description": "AI-powered crypto and forex trading desk",
+        "pipeline_type": "plan-feature",
+        "agents": [
+            {"role": "ceo", "name": "Fund Manager", "capabilities": ["strategy", "risk-management", "delegation"]},
+            {"role": "researcher", "name": "Market Analyst", "capabilities": ["technical-analysis", "on-chain-analysis", "research"]},
+            {"role": "backend-dev", "name": "Trading Agent", "capabilities": ["trading", "api-integration", "binance"]},
+            {"role": "devops", "name": "Risk Manager", "capabilities": ["monitoring", "alerts", "reporting"]},
+        ],
+    },
+    "content": {
+        "name": "Content Studio",
+        "description": "AI-powered content creation and distribution studio",
+        "pipeline_type": "plan-feature",
+        "agents": [
+            {"role": "ceo", "name": "Creative Director", "capabilities": ["strategy", "planning", "delegation"]},
+            {"role": "researcher", "name": "Trend Researcher", "capabilities": ["research", "trend-analysis", "seo"]},
+            {"role": "backend-dev", "name": "Content Writer", "capabilities": ["content_creation", "copywriting", "storytelling"]},
+            {"role": "frontend-dev", "name": "Designer", "capabilities": ["design", "branding", "visual-content"]},
+            {"role": "devops", "name": "Publisher", "capabilities": ["scheduling", "social-media", "distribution"]},
+        ],
+    },
+}
+
 COMPANY_AGENTS = {
     "ceo": {
         "role": "ceo",
@@ -196,61 +247,164 @@ class OrchestrationService:
         }
     
     async def _execute_task(self, task: Task) -> Dict[str, Any]:
-        """Execute a single task using the appropriate agent runtime"""
-        role = task.assigned_role or "backend-dev"
+        """Execute a single task using LLM generation and runtime tools"""
+        import re
+        from services.llm_client import get_llm_client, LLMResponse
         
-        # Non-blocking simulated execution for API responsiveness
-        if role == "ceo":
+        role = task.assigned_role or "backend-dev"
+        llm = get_llm_client()
+        
+        # Get or create runtime for this agent role
+        runtime = self.runtimes.get(f"arli_{role}")
+        if not runtime and RUNTIME_AVAILABLE:
+            runtime = AgentRuntime(agent_id=f"arli_{role}", workspace=str(self.workspace), enable_memory=True)
+            self.runtimes[f"arli_{role}"] = runtime
+        
+        try:
+            if role == "ceo":
+                messages = [
+                    {"role": "system", "content": "You are a strategic CEO of an autonomous AI company. Analyze the task and create a concise execution plan with phases, success criteria, and resource allocation."},
+                    {"role": "user", "content": f"Task: {task.description}"},
+                ]
+                resp = await llm.generate(messages, task_type="reasoning", max_tokens=2000)
+                if runtime:
+                    runtime.log("plan_created", f"CEO plan for {task.description[:60]}")
+                return {
+                    "success": True,
+                    "output": resp.content,
+                    "credits_used": resp.credits_used,
+                    "model_used": resp.model,
+                    "role": "ceo"
+                }
+            
+            elif role == "architect":
+                messages = [
+                    {"role": "system", "content": "You are a senior system architect. Design a technical solution. Include architecture overview, tech stack, database recommendations, and API contracts."},
+                    {"role": "user", "content": f"Design architecture for: {task.description}"},
+                ]
+                resp = await llm.generate(messages, task_type="reasoning", max_tokens=3000)
+                if runtime:
+                    runtime.log("design_created", f"Architecture for {task.description[:60]}")
+                return {
+                    "success": True,
+                    "output": resp.content,
+                    "credits_used": resp.credits_used,
+                    "model_used": resp.model,
+                    "role": "architect"
+                }
+            
+            elif role in ("backend-dev", "frontend-dev", "devops"):
+                task_type_code = "coding"
+                if role == "backend-dev":
+                    system = "You are an expert backend developer. Write clean, production-ready Python code. If creating a file, include the filename as a header comment like: # filename.py"
+                    lang = "python" if "frontend" not in task.description.lower() else "typescript"
+                elif role == "frontend-dev":
+                    system = "You are an expert React/TypeScript frontend developer. Write modern UI code. If creating a component, include the filename as a header comment like: # Component.tsx"
+                    lang = "typescript"
+                else:
+                    system = "You are a DevOps engineer. Write deployment configs, Docker files, CI/CD pipelines. If creating a file, include the filename as a header comment like: # docker-compose.yml"
+                    lang = "yaml"
+                
+                messages = [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": task.description},
+                ]
+                resp = await llm.generate(messages, task_type=task_type_code, max_tokens=4000)
+                
+                files_modified = []
+                if runtime:
+                    # Try to extract file blocks and write them
+                    file_blocks = re.findall(r'```\w*\n#\s*(\S+)\n(.*?)```', resp.content, re.DOTALL)
+                    if not file_blocks:
+                        file_blocks = re.findall(r'FILE:\s*(\S+)\s*```\w*\n(.*?)```', resp.content, re.DOTALL)
+                    for fname, fcontent in file_blocks:
+                        write_result = runtime.write_file(fname.strip(), fcontent.strip())
+                        if write_result.get("success"):
+                            files_modified.append(fname.strip())
+                    runtime.log("code_execution", f"{role} executed {task.description[:60]} using {resp.model}")
+                
+                return {
+                    "success": True,
+                    "output": resp.content,
+                    "credits_used": resp.credits_used,
+                    "model_used": resp.model,
+                    "role": role,
+                    "files_modified": files_modified,
+                }
+            
+            else:
+                messages = [
+                    {"role": "system", "content": "You are a helpful AI agent completing tasks efficiently."},
+                    {"role": "user", "content": task.description},
+                ]
+                resp = await llm.generate(messages, task_type="general")
+                return {
+                    "success": True,
+                    "output": resp.content,
+                    "credits_used": resp.credits_used,
+                    "model_used": resp.model,
+                    "role": role
+                }
+        
+        except Exception as e:
             return {
-                "success": True,
-                "output": {
-                    "objective": task.description,
-                    "phases": ["Analyze requirements", "Define success criteria", "Allocate resources", "Set timeline"],
-                    "recommendations": ["Start with architecture design", "Use iterative development approach"],
-                },
-                "role": "ceo"
-            }
-        elif role == "architect":
-            return {
-                "success": True,
-                "output": {
-                    "architecture": "FastAPI backend + React frontend",
-                    "database": "PostgreSQL with SQLAlchemy async ORM",
-                    "cache": "Redis for task queue",
-                    "components": [
-                        {"name": "API Gateway", "tech": "FastAPI"},
-                        {"name": "Worker Queue", "tech": "Celery + Redis"},
-                        {"name": "Frontend", "tech": "Next.js"},
-                    ],
-                },
-                "role": "architect"
-            }
-        elif role == "backend-dev":
-            return {
-                "success": True,
-                "output": "Backend APIs and database schema implemented",
-                "role": "backend-dev",
-                "files_modified": []
-            }
-        elif role == "frontend-dev":
-            return {
-                "success": True,
-                "output": "UI components built and integrated with backend",
-                "role": "frontend-dev"
-            }
-        elif role == "devops":
-            return {
-                "success": True,
-                "output": "Deployment configuration validated and monitoring setup",
-                "role": "devops"
-            }
-        else:
-            return {
-                "success": True,
-                "output": f"Task completed by {role}",
-                "role": role
+                "success": False,
+                "error": str(e),
+                "role": role,
             }
     
+
+    async def launch_template(
+        self,
+        db: AsyncSession,
+        template_key: str,
+        user_id: str,
+        custom_name: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Launch a company from a 1-click template"""
+        template = COMPANY_TEMPLATES.get(template_key)
+        if not template:
+            return {"success": False, "error": f"Unknown template: {template_key}"}
+        
+        # Create agents for each role in template
+        created_agents = []
+        from models import Agent
+        
+        for agent_config in template["agents"]:
+            agent = Agent(
+                agent_id=f"agent_{agent_config['role']}_{uuid.uuid4().hex[:6]}",
+                name=agent_config["name"],
+                role=agent_config["role"],
+                capabilities=agent_config["capabilities"],
+                owner_id=user_id,
+                creator_id=user_id,
+            )
+            db.add(agent)
+            created_agents.append(agent)
+        
+        await db.flush()
+        
+        # Create workflow
+        workflow = await self.create_workflow(
+            db=db,
+            name=custom_name or template["name"],
+            description=template["description"],
+            pipeline_type=template["pipeline_type"],
+            context={"template": template_key, "agents": [a.agent_id for a in created_agents]},
+        )
+        
+        await db.commit()
+        
+        return {
+            "success": True,
+            "template": template_key,
+            "workflow_id": workflow.workflow_id,
+            "agents": [
+                {"id": a.id, "agent_id": a.agent_id, "name": a.name, "role": a.role}
+                for a in created_agents
+            ],
+        }
+
     async def run_full_workflow(self, db: AsyncSession, workflow_id: str) -> Dict[str, Any]:
         """Run all steps of a workflow sequentially"""
         results = []
