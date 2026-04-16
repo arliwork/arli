@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAuth, UserButton } from '@clerk/nextjs'
+// Clerk removed - using safe auth
 import Link from 'next/link'
+import { useAuthSafe } from '../hooks/useAuthSafe'
 import toast from 'react-hot-toast'
 import { 
   RevenueChart, 
@@ -27,23 +28,23 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
-  const { getToken, userId } = useAuth()
+  const { isLoaded, token, getToken } = useAuthSafe()
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('7d')
 
   useEffect(() => {
-    if (userId) {
+    if (token) {
       fetchAnalytics()
     }
-  }, [userId, timeRange])
+  }, [token, timeRange])
 
   const fetchAnalytics = async () => {
     try {
-      const token = await getToken()
+      const authToken = await getToken()
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/analytics?range=${timeRange}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
+        { headers: { 'Authorization': `Bearer ${authToken}` } }
       )
       
       if (!response.ok) throw new Error('Failed to fetch analytics')
@@ -130,7 +131,7 @@ export default function AnalyticsPage() {
             <Link href="/billing" className="text-gray-600 hover:text-gray-900">
               Billing
             </Link>
-            <UserButton afterSignOutUrl="/" />
+            <div className="w-8 h-8 bg-gray-200 rounded-full"/>
           </div>
         </div>
       </header>

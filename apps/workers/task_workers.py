@@ -57,6 +57,11 @@ class TaskWorker:
 class ContentWorker(TaskWorker):
     """REAL content generation with GPT-4"""
     
+    def execute_sync(self, task_params: Dict) -> Dict[str, Any]:
+        """Synchronous wrapper for Celery"""
+        import asyncio
+        return asyncio.get_event_loop().run_until_complete(self.execute(task_params))
+    
     async def execute(self, task_params: Dict) -> Dict[str, Any]:
         start_time = datetime.now()
         
@@ -138,6 +143,10 @@ class ContentWorker(TaskWorker):
 
 class TradingWorker(TaskWorker):
     """REAL trading with exchange APIs"""
+    
+    def execute_sync(self, task_params: Dict) -> Dict[str, Any]:
+        import asyncio
+        return asyncio.get_event_loop().run_until_complete(self.execute(task_params))
     
     async def execute(self, task_params: Dict) -> Dict[str, Any]:
         start_time = datetime.now()
@@ -238,6 +247,10 @@ class TradingWorker(TaskWorker):
 
 class ResearchWorker(TaskWorker):
     """REAL research tasks"""
+    
+    def execute_sync(self, task_params: Dict) -> Dict[str, Any]:
+        import asyncio
+        return asyncio.get_event_loop().run_until_complete(self.execute(task_params))
     
     async def execute(self, task_params: Dict) -> Dict[str, Any]:
         start_time = datetime.now()

@@ -65,3 +65,4 @@ ssl/
 *.pid
 *.seed
 *.pid.lock
+.pgdata/

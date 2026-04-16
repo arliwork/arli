@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    typedRoutes: true,
-  },
+  output: 'standalone',
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3100/api/:path*',
+        destination: 'http://localhost:8000/:path*',
       },
     ]
   },

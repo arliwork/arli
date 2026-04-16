@@ -43,7 +43,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
         <YAxis stroke="#6b7280" fontSize={12} />
         <Tooltip 
           contentStyle={{ background: '#fff', borderRadius: 8, border: '1px solid #e5e7eb' }}
-          formatter={(value: number) => `$${value.toFixed(2)}`}
+          formatter={(value: any) => `$${Number(value).toFixed(2)}`}
         />
         <Legend />
         <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRevenue)" name="Revenue" />
@@ -132,7 +132,7 @@ export function DistributionChart({ data }: DistributionChartProps) {
           cx="50%"
           cy="50%"
           labelLine={false}
-          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          label={({ name, percent }: any) => `${name || ""} ${((percent || 0) * 100).toFixed(0)}%`}
           outerRadius={100}
           fill="#8884d8"
           dataKey="value"

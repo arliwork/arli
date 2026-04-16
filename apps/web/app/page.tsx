@@ -1,11 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { UserButton, SignedIn, SignedOut, useAuth } from '@clerk/nextjs'
 
 export default function Home() {
-  const { isLoaded } = useAuth()
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
@@ -18,23 +15,18 @@ export default function Home() {
             <span className="text-xl font-bold text-gray-900">ARLI</span>
           </div>
           <nav className="flex items-center gap-6">
-            <SignedIn>
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
-                Dashboard
-              </Link>
-              <Link href="/companies" className="text-gray-600 hover:text-gray-900">
-                My Companies
-              </Link>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-            <SignedOut>
-              <Link href="/sign-in" className="text-gray-600 hover:text-gray-900">
-                Sign In
-              </Link>
-              <Link href="/sign-up" className="btn-primary">
-                Get Started
-              </Link>
-            </SignedOut>
+            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
+              Dashboard
+            </Link>
+            <Link href="/marketplace" className="text-gray-600 hover:text-gray-900">
+              Marketplace
+            </Link>
+            <Link href="/skills" className="text-gray-600 hover:text-gray-900">
+              Skills
+            </Link>
+            <Link href="/dashboard" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+              Get Started
+            </Link>
           </nav>
         </div>
       </header>
@@ -51,12 +43,12 @@ export default function Home() {
             Hire AI agents, set goals, and watch your business grow while you sleep.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/dashboard" className="btn-primary text-lg px-8 py-3">
+            <Link href="/dashboard" className="bg-blue-600 text-white text-lg px-8 py-3 rounded-lg hover:bg-blue-700 transition">
               Launch Your Company
             </Link>
-            <button className="btn-secondary text-lg px-8 py-3">
-              View Demo
-            </button>
+            <Link href="/marketplace" className="bg-white text-gray-700 border text-lg px-8 py-3 rounded-lg hover:bg-gray-50 transition">
+              Browse Agents
+            </Link>
           </div>
         </div>
       </section>
@@ -102,38 +94,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Templates */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            Start with a Proven Template
-          </h2>
-          <p className="text-gray-600 text-center mb-16 max-w-2xl mx-auto">
-            Launch in 10 minutes with pre-configured companies
-          </p>
-          <div className="grid md:grid-cols-3 gap-6">
-            <TemplateCard
-              name="Content Agency"
-              description="AI-powered TikTok and Instagram content creation"
-              agents={4}
-              price="$49/mo"
-            />
-            <TemplateCard
-              name="Dropshipping Store"
-              description="Automated product hunting and ad management"
-              agents={5}
-              price="$79/mo"
-            />
-            <TemplateCard
-              name="SaaS Micro-Product"
-              description="Build and launch micro-SaaS products"
-              agents={3}
-              price="$99/mo"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Stats */}
       <section className="py-20 bg-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4">
@@ -158,23 +118,10 @@ export default function Home() {
 
 function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
   return (
-    <div className="card hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow">
       <div className="text-3xl mb-4">{icon}</div>
       <h3 className="text-xl font-semibold mb-2 text-gray-900">{title}</h3>
       <p className="text-gray-600">{description}</p>
-    </div>
-  )
-}
-
-function TemplateCard({ name, description, agents, price }: { name: string; description: string; agents: number; price: string }) {
-  return (
-    <div className="card hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-500">
-      <h3 className="text-xl font-semibold mb-2 text-gray-900">{name}</h3>
-      <p className="text-gray-600 mb-4">{description}</p>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">{agents} AI agents</span>
-        <span className="text-lg font-bold text-blue-600">{price}</span>
-      </div>
     </div>
   )
 }

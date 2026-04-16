@@ -1,7 +1,8 @@
 'use client'
+import { useAuthSafe } from '../hooks/useAuthSafe'
 
 import { useEffect, useState } from 'react'
-import { useAuth, UserButton } from '@clerk/nextjs'
+// Clerk removed - using safe auth
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 // import { CREDIT_PACKAGES } from '@arli/types'
@@ -18,20 +19,19 @@ interface Company {
 }
 
 export default function BillingPage() {
-  const { getToken, userId } = useAuth()
+  const { isLoaded, token, getToken } = useAuthSafe()
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [purchasing, setPurchasing] = useState<string | null>(null)
 
   useEffect(() => {
-    if (userId) {
+    if (token) {
       fetchCompanies()
     }
-  }, [userId])
+  }, [token])
 
   const fetchCompanies = async () => {
     try {
-      const token = await getToken()
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/companies`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -129,7 +129,7 @@ export default function BillingPage() {
             <Link href="/companies" as="/companies" className="text-gray-600 hover:text-gray-900">
               Companies
             </Link>
-            <UserButton afterSignOutUrl="/" />
+            <div className="w-8 h-8 bg-gray-200 rounded-full"/>
           </div>
         </div>
       </header>
@@ -169,19 +169,19 @@ export default function BillingPage() {
             >
               <h3 className="text-lg font-bold text-gray-900">{pkg.name}</h3>
               <div className="mt-4 mb-6">
-                <span className="text-4xl font-bold text-gray-900">${pkg.priceUsd}</span>
+                <span className="text-4xl font-bold text-gray-900">${pkg.price}</span>
               </div>
               <div className="space-y-2 mb-6">
                 <p className="text-2xl font-semibold text-blue-600">
                   {pkg.credits.toLocaleString()} credits
                 </p>
-                {pkg.bonusCredits > 0 && (
+                {0 > 0 && (
                   <p className="text-sm text-green-600 font-medium">
-                    + {pkg.bonusCredits.toLocaleString()} bonus
+                    + {0} bonus
                   </p>
                 )}
                 <p className="text-sm text-gray-500">
-                  ${(pkg.priceUsd / pkg.credits).toFixed(4)} per credit
+                  ${(pkg.price / pkg.credits).toFixed(4)} per credit
                 </p>
               </div>
               <button
