@@ -1,6 +1,10 @@
 """ARLI API Configuration"""
 import os
+from pathlib import Path
 from pydantic_settings import BaseSettings
+
+# Resolve .env relative to this file (apps/api/src/config.py -> apps/api/.env)
+_ENV_FILE = str(Path(__file__).resolve().parent.parent / ".env")
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://arli:arli_secret@127.0.0.1:5433/arli_prod"
@@ -12,9 +16,13 @@ class Settings(BaseSettings):
     APP_URL: str = "http://localhost:8000"
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
+    OPENROUTER_API_KEY: str = ""
+    KIMI_API_KEY: str = ""
+    KIMI_BASE_URL: str = "https://api.kimi.com/coding"
+    OLLAMA_URL: str = "http://localhost:11434"
     
     class Config:
-        env_file = ".env"
+        env_file = _ENV_FILE
         extra = "ignore"
 
 settings = Settings()

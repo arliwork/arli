@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from config import settings
 from database import engine, Base
+import models  # noqa: F401 — registers tables with Base.metadata
 from routers import auth, agents, tasks, marketplace, orchestration, stats, companies, workspaces, scheduler, credits
 
 @asynccontextmanager

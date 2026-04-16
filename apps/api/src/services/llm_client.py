@@ -65,12 +65,23 @@ class LLMClient:
     """Unified LLM client with credit tracking"""
 
     def __init__(self):
-        self.openai_key = os.getenv("OPENAI_API_KEY", "")
-        self.anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-        self.openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
-        self.kimi_key = os.getenv("KIMI_API_KEY", "")
-        self.kimi_base_url = os.getenv("KIMI_BASE_URL", "https://api.kimi.com/coding")
-        self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
+        # Import config here to avoid circular imports at module level
+        try:
+            from config import settings
+            self.openai_key = settings.OPENAI_API_KEY
+            self.anthropic_key = settings.ANTHROPIC_API_KEY
+            self.openrouter_key = settings.OPENROUTER_API_KEY
+            self.kimi_key = settings.KIMI_API_KEY
+            self.kimi_base_url = settings.KIMI_BASE_URL
+            self.ollama_url = settings.OLLAMA_URL
+        except Exception:
+            # Fallback for environments where config is not available
+            self.openai_key = os.getenv("OPENAI_API_KEY", "")
+            self.anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+            self.openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
+            self.kimi_key = os.getenv("KIMI_API_KEY", "")
+            self.kimi_base_url = os.getenv("KIMI_BASE_URL", "https://api.kimi.com/coding")
+            self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
         self.session: Optional[aiohttp.ClientSession] = None
 
     async def _get_session(self) -> aiohttp.ClientSession:

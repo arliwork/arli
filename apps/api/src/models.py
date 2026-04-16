@@ -1,10 +1,10 @@
 """SQLAlchemy ORM models for ARLI production database"""
 import uuid
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Numeric, ForeignKey, Text, JSON, select
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-Base = declarative_base()
+from database import Base
 
 def generate_uuid():
     return str(uuid.uuid4())
