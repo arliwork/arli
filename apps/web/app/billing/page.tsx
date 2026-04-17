@@ -18,30 +18,47 @@ interface Company {
   credits: number
 }
 
+interface CreditBalance {
+  balance: number
+  spent: number
+  tier: string
+  tier_limit: number
+}
+
 export default function BillingPage() {
-  const { isLoaded, token, getToken } = useAuthSafe()
+  const { isLoaded, token } = useAuthSafe()
   const [companies, setCompanies] = useState<Company[]>([])
+  const [credits, setCredits] = useState<CreditBalance | null>(null)
   const [loading, setLoading] = useState(true)
   const [purchasing, setPurchasing] = useState<string | null>(null)
 
   useEffect(() => {
     if (token) {
-      fetchCompanies()
+      fetchData()
     }
   }, [token])
 
-  const fetchCompanies = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/companies`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const [companiesRes, creditsRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/companies`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/credits/balance`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+      ])
       
-      if (!response.ok) throw new Error('Failed to fetch')
-      
-      const data = await response.json()
-      setCompanies(data.companies || [])
+      if (companiesRes.ok) {
+        const data = await companiesRes.json()
+        setCompanies(data.companies || [])
+      }
+      if (creditsRes.ok) {
+        const data = await creditsRes.json()
+        if (data.success) setCredits(data)
+      }
     } catch (error) {
-      toast.error('Failed to load companies')
+      toast.error('Failed to load billing data')
     } finally {
       setLoading(false)
     }
@@ -55,7 +72,6 @@ export default function BillingPage() {
     
     setPurchasing(packageId)
     try {
-      const token = await getToken()
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/billing/checkout`,
         {
@@ -83,7 +99,6 @@ export default function BillingPage() {
 
   const handlePortal = async () => {
     try {
-      const token = await getToken()
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/billing/portal`,
         {
@@ -141,21 +156,27 @@ export default function BillingPage() {
           <p className="text-blue-100 mb-6">
             Credits are used to power your AI agents. Purchase more to keep your companies running.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {companies.map(company => (
-              <div key={company.id} className="bg-white/10 backdrop-blur rounded-lg p-4">
-                <p className="text-sm text-blue-200">{company.name}</p>
-                <p className="text-3xl font-bold">{company.credits.toLocaleString()}</p>
-                <p className="text-sm text-blue-200">credits</p>
-              </div>
-            ))}
-            {companies.length === 0 && (
-              <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                <p className="text-sm text-blue-200">No companies yet</p>
-                <p className="text-3xl font-bold">0</p>
-                <p className="text-sm text-blue-200">credits</p>
-              </div>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+              <p className="text-sm text-blue-200">Available</p>
+              <p className="text-3xl font-bold">{credits ? Math.floor(credits.balance).toLocaleString() : '—'}</p>
+              <p className="text-sm text-blue-200">credits</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+              <p className="text-sm text-blue-200">Spent</p>
+              <p className="text-3xl font-bold">{credits ? Math.floor(credits.spent).toLocaleString() : '—'}</p>
+              <p className="text-sm text-blue-200">credits</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+              <p className="text-sm text-blue-200">Tier</p>
+              <p className="text-3xl font-bold uppercase">{credits ? credits.tier : '—'}</p>
+              <p className="text-sm text-blue-200">subscription</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+              <p className="text-sm text-blue-200">Limit</p>
+              <p className="text-3xl font-bold">{credits ? Math.floor(credits.tier_limit).toLocaleString() : '—'}</p>
+              <p className="text-sm text-blue-200">monthly cap</p>
+            </div>
           </div>
         </div>
 

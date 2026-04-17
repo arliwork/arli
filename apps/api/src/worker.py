@@ -83,6 +83,10 @@ def process_task(self, task_id: str):
         
         if result.get("success") and task.agent_id:
             update_agent_xp(db_session, task.agent_id, task)
+            # Deduct credits for LLM usage
+            credits_used = result.get("credits_used", 0)
+            if credits_used:
+                deduct_credits_sync(task.agent_id, credits_used)
         
         db_session.commit()
         return result
@@ -237,6 +241,27 @@ def calculate_market_value(agent) -> float:
     success_rate = agent.successful_tasks / max(agent.total_tasks, 1)
     success_factor = 1.0 + success_rate * 2.0
     return base * level_mult * success_factor + (agent.level * 100)
+
+def deduct_credits_sync(agent_id: str, amount: float):
+    """Deduct credits from agent owner's balance synchronously"""
+    from decimal import Decimal
+    from models import Agent, User
+    
+    agent = db_session.query(Agent).filter(Agent.id == agent_id).first()
+    if not agent:
+        return
+    
+    user = db_session.query(User).filter(User.id == agent.owner_id).first()
+    if not user:
+        return
+    
+    amount_dec = Decimal(str(amount))
+    if user.credits_balance >= amount_dec:
+        user.credits_balance -= amount_dec
+        user.credits_spent += amount_dec
+        db_session.commit()
+    else:
+        db_session.rollback()
 
 @celery_app.task
 def run_scheduled_workflows():
