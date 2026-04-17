@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     KIMI_BASE_URL: str = "https://api.kimi.com/coding"
     OLLAMA_URL: str = "http://localhost:11434"
     TELEGRAM_BOT_TOKEN: str = ""
+    DISCORD_BOT_TOKEN: str = ""
     
     class Config:
         env_file = _ENV_FILE
