@@ -83,6 +83,43 @@ export default function IntegrationsPage() {
           </div>
         </div>
 
+        {/* Discord */}
+        <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <MessageSquare className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Discord</h2>
+              <p className="text-sm text-gray-600">Run ARLI agents from your Discord server.</p>
+            </div>
+            <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Active</span>
+          </div>
+
+          <div className="bg-gray-900 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-400 text-sm">Webhook URL</span>
+              <button
+                onClick={() => { navigator.clipboard.writeText(`${API_URL}/webhooks/discord`); toast.success("Copied"); }}
+                className="text-gray-400 hover:text-white transition"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+            <code className="text-green-400 text-sm break-all">{API_URL}/webhooks/discord</code>
+          </div>
+
+          <div className="space-y-2 text-sm text-gray-700">
+            <p className="font-medium">Setup instructions:</p>
+            <ol className="list-decimal list-inside space-y-1 text-gray-600">
+              <li>Create a Discord application at <a href="https://discord.com/developers/applications" className="text-blue-600 hover:underline" target="_blank" rel="noreferrer">Developer Portal</a></li>
+              <li>Add a Bot, copy the token to <code className="bg-gray-100 px-1 rounded">apps/api/.env</code> as <code className="bg-gray-100 px-1 rounded">DISCORD_BOT_TOKEN</code></li>
+              <li>Set the Interactions Endpoint URL to the webhook URL above</li>
+              <li>Register slash commands: <code className="bg-gray-100 px-1 rounded text-xs">/agents</code>, <code className="bg-gray-100 px-1 rounded text-xs">/status</code>, <code className="bg-gray-100 px-1 rounded text-xs">/task</code></li>
+            </ol>
+          </div>
+        </div>
+
         {/* Browser Automation */}
         <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
           <div className="flex items-center gap-3 mb-2">
