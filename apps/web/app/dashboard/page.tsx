@@ -209,16 +209,23 @@ function QuickActionCard({ title, description, link }: { title: string; descript
 function DemoPanel({ onRefresh }: { onRefresh: () => void }) {
   const [running, setRunning] = useState(false);
   const [lastResult, setLastResult] = useState<any>(null);
+  const [goal, setGoal] = useState("");
+  const [createdCompany, setCreatedCompany] = useState<any>(null);
 
   const setupDemo = async () => {
+    if (!goal.trim()) {
+      toast.error("Enter a goal first");
+      return;
+    }
     setRunning(true);
     try {
-      const res = await fetch(`${API_URL}/autonomous/demo/setup-alpha-fund`, { method: "POST" });
+      const res = await fetch(`${API_URL}/autonomous/demo/create-company?goal=${encodeURIComponent(goal)}`, { method: "POST" });
       const data = await res.json();
-      toast.success(data.message || "Demo setup complete!");
+      setCreatedCompany(data);
+      toast.success(data.message || "Company created!");
       onRefresh();
     } catch (e) {
-      toast.error("Demo setup failed");
+      toast.error("Setup failed");
     } finally {
       setRunning(false);
     }
@@ -230,7 +237,7 @@ function DemoPanel({ onRefresh }: { onRefresh: () => void }) {
       const res = await fetch(`${API_URL}/autonomous/demo/run-cycle`, { method: "POST" });
       const data = await res.json();
       setLastResult(data);
-      toast.success(`Heartbeat cycle: ${data.agents_processed} agents processed`);
+      toast.success(`Heartbeat: ${data.agents_processed} agents processed`);
       onRefresh();
     } catch (e) {
       toast.error("Cycle failed");
@@ -241,28 +248,42 @@ function DemoPanel({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <div className="bg-gradient-to-r from-indigo-900 to-blue-900 text-white rounded-xl p-6 mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-xl font-bold">Investor Demo — Alpha Fund</h2>
-          <p className="text-blue-200 text-sm mt-1">Setup an AI company, watch the CEO propose strategy, approve hires, and see agents execute tasks.</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={setupDemo}
-            disabled={running}
-            className="bg-white text-indigo-900 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition disabled:opacity-50"
-          >
-            {running ? "Setting up..." : "1. Setup Alpha Fund"}
-          </button>
-          <button
-            onClick={runCycle}
-            disabled={running}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition disabled:opacity-50"
-          >
-            {running ? "Running..." : "2. Run Heartbeat"}
-          </button>
-        </div>
+      <div className="mb-4">
+        <h2 className="text-xl font-bold">Create Your AI Company</h2>
+        <p className="text-blue-200 text-sm mt-1">Enter any goal. The CEO will analyze it, propose a team, and start executing.</p>
       </div>
+
+      <div className="flex gap-3 mb-4">
+        <input
+          value={goal}
+          onChange={(e) => setGoal(e.target.value)}
+          placeholder="e.g. Build a tennis betting analysis system, Launch a content agency, Create a DeFi research firm..."
+          className="flex-1 px-4 py-2 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <button
+          onClick={setupDemo}
+          disabled={running}
+          className="bg-white text-indigo-900 px-5 py-2 rounded-lg font-medium hover:bg-blue-50 transition disabled:opacity-50 whitespace-nowrap"
+        >
+          {running ? "Creating..." : "Create Company"}
+        </button>
+        <button
+          onClick={runCycle}
+          disabled={running}
+          className="bg-blue-500 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-600 transition disabled:opacity-50 whitespace-nowrap"
+        >
+          {running ? "Running..." : "Run Cycle"}
+        </button>
+      </div>
+
+      {createdCompany && (
+        <div className="bg-white/10 rounded-lg p-3 mb-3">
+          <p className="font-bold text-sm">{createdCompany.company_name}</p>
+          <p className="text-xs text-blue-200">Goal: {createdCompany.goal}</p>
+          <p className="text-xs text-blue-200 mt-1">Team: {createdCompany.team?.map((a: any) => `${a.name} (${a.role})`).join(", ")}</p>
+        </div>
+      )}
+
       {lastResult && (
         <div className="bg-white/10 rounded-lg p-3 text-sm font-mono">
           Processed {lastResult.agents_processed} agents at {new Date(lastResult.run_at).toLocaleTimeString()}

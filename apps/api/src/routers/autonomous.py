@@ -55,101 +55,130 @@ async def execute_approved_strategy(
     result = await service.execute_approved_strategy(approval_id)
     return result
 
-@router.post("/demo/setup-alpha-fund")
-async def demo_setup_alpha_fund(
+@router.post("/demo/create-company")
+async def demo_create_company(
+    goal: str,
+    company_name: Optional[str] = None,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Production Demo: Set up 'Alpha Fund' company with CEO + analysts."""
+    """General Demo: Create an AI Company from any goal with dynamic team assembly."""
     import uuid
-    from datetime import datetime, timezone
-    from models import Company, Agent, Task
-    from sqlalchemy import select
+    from services.llm_client import get_llm_client
+
+    llm = get_llm_client()
+
+    # Use LLM to determine optimal team composition based on goal
+    team_prompt = f"""Given this business goal: "{goal}"
+
+Determine the optimal AI team composition. Respond with JSON only:
+{{
+  "company_name": "Creative name for the company",
+  "description": "One sentence description",
+  "team": [
+    {{"role": "ceo", "name": "Name", "description": "What they do", "level": 5}},
+    {{"role": "developer", "name": "Name", "description": "What they do", "level": 3}},
+    {{"role": "analyst", "name": "Name", "description": "What they do", "level": 3}}
+  ],
+  "initial_task": "First task for the CEO"
+}}
+
+Pick 3-4 roles that best fit the goal. Available roles: ceo, cto, developer, analyst, trader, marketer, designer, researcher."""
+
+    try:
+        response = await llm.generate(
+            messages=[
+                {"role": "system", "content": "You are a startup architect."},
+                {"role": "user", "content": team_prompt},
+            ],
+            task_type="reasoning",
+            max_tokens=2000,
+        )
+        text = response.content.strip()
+        if "```json" in text:
+            text = text.split("```json")[1].split("```")[0].strip()
+        elif "```" in text:
+            text = text.split("```")[1].split("```")[0].strip()
+        plan = json.loads(text)
+    except Exception:
+        # Fallback plan
+        plan = {
+            "company_name": company_name or "AI Venture",
+            "description": f"AI company focused on: {goal}",
+            "team": [
+                {"role": "ceo", "name": "Chief Executive", "description": "Strategic leader", "level": 5},
+                {"role": "developer", "name": "Lead Developer", "description": "Builds the product", "level": 3},
+                {"role": "analyst", "name": "Research Analyst", "description": "Gathers insights", "level": 3},
+            ],
+            "initial_task": f"Create a strategy to achieve: {goal}",
+        }
 
     # 1. Create Company
-    company = Company(
+    comp = Company(
         company_id=f"comp_{uuid.uuid4().hex[:6]}",
-        name="Alpha Fund",
-        description="AI-powered quantitative research fund",
-        goal="Analyze crypto and equity markets to generate alpha signals with 60%+ confidence",
+        name=plan["company_name"],
+        description=plan.get("description", ""),
+        goal=goal,
         owner_id=current_user.id,
         monthly_budget=500,
     )
-    db.add(company)
+    db.add(comp)
     await db.commit()
-    await db.refresh(company)
+    await db.refresh(comp)
 
-    # 2. Create CEO Agent
-    ceo = Agent(
-        agent_id=f"agent_{uuid.uuid4().hex[:6]}",
-        name="Alpha CEO",
-        role="ceo",
-        description="Strategic leader of Alpha Fund. Sets research direction and delegates analysis tasks.",
-        owner_id=current_user.id,
-        creator_id=current_user.id,
-        company_id=company.id,
-        level=5,
-        tier="EXPERT",
-        monthly_budget=100,
-        status="idle",
-    )
-    db.add(ceo)
-    await db.commit()
-    await db.refresh(ceo)
+    created_agents = []
+    ceo_agent = None
 
-    # 3. Create Analyst 1
-    analyst1 = Agent(
-        agent_id=f"agent_{uuid.uuid4().hex[:6]}",
-        name="Crypto Analyst",
-        role="analyst",
-        description="Specializes in on-chain analysis, DeFi protocols, and crypto market sentiment.",
-        owner_id=current_user.id,
-        creator_id=current_user.id,
-        company_id=company.id,
-        manager_id=ceo.id,
-        level=3,
-        tier="ADVANCED",
-        monthly_budget=50,
-        status="idle",
-    )
-    db.add(analyst1)
+    # 2. Create agents from plan
+    for member in plan.get("team", []):
+        agent = Agent(
+            agent_id=f"agent_{uuid.uuid4().hex[:6]}",
+            name=member["name"],
+            role=member["role"],
+            description=member.get("description", ""),
+            owner_id=current_user.id,
+            creator_id=current_user.id,
+            company_id=comp.id,
+            manager_id=None,  # Will link after CEO created
+            level=member.get("level", 3),
+            tier="EXPERT" if member.get("level", 3) >= 5 else "ADVANCED",
+            monthly_budget=100 if member["role"] == "ceo" else 50,
+            status="idle",
+        )
+        db.add(agent)
+        await db.commit()
+        await db.refresh(agent)
+        created_agents.append(agent)
+        if member["role"] == "ceo":
+            ceo_agent = agent
 
-    # 4. Create Analyst 2
-    analyst2 = Agent(
-        agent_id=f"agent_{uuid.uuid4().hex[:6]}",
-        name="Equity Analyst",
-        role="analyst",
-        description="Focuses on equities, macro trends, and earnings analysis.",
-        owner_id=current_user.id,
-        creator_id=current_user.id,
-        company_id=company.id,
-        manager_id=ceo.id,
-        level=3,
-        tier="ADVANCED",
-        monthly_budget=50,
-        status="idle",
-    )
-    db.add(analyst2)
-    await db.commit()
+    # 3. Link subordinates to CEO
+    if ceo_agent:
+        for agent in created_agents:
+            if agent.id != ceo_agent.id:
+                agent.manager_id = ceo_agent.id
+        await db.commit()
 
-    # 5. Initial task for CEO
-    strategy_task = Task(
-        task_id=f"task_{uuid.uuid4().hex[:6]}",
-        description="Create a comprehensive market research strategy for Q2 2026 covering crypto and equity markets",
-        assigned_role="ceo",
-        agent_id=ceo.id,
-        status="pending",
-    )
-    db.add(strategy_task)
-    await db.commit()
+    # 4. Initial task for CEO
+    if ceo_agent:
+        task = Task(
+            task_id=f"task_{uuid.uuid4().hex[:6]}",
+            description=plan.get("initial_task", f"Create a strategy to achieve: {goal}"),
+            assigned_role="ceo",
+            agent_id=ceo_agent.id,
+            status="pending",
+        )
+        db.add(task)
+        await db.commit()
 
     return {
         "success": True,
-        "demo": "Alpha Fund",
-        "company_id": company.company_id,
-        "ceo_id": ceo.agent_id,
-        "analysts": [analyst1.agent_id, analyst2.agent_id],
-        "message": "Alpha Fund is ready! The CEO will propose a strategy. Check /approvals to review it.",
+        "company_id": comp.company_id,
+        "company_name": comp.name,
+        "goal": goal,
+        "ceo_id": ceo_agent.agent_id if ceo_agent else None,
+        "team": [{"agent_id": a.agent_id, "name": a.name, "role": a.role} for a in created_agents],
+        "message": f"{comp.name} is ready! The CEO will analyze the goal and propose a strategy. Check /approvals to review and approve.",
     }
 
 @router.post("/demo/run-cycle")
