@@ -143,6 +143,8 @@ class LLMClient:
         temperature: float = 0.7,
         max_tokens: int = 4000,
         tools: Optional[List[Dict]] = None,
+        agent_id: Optional[str] = None,
+        db = None,
     ) -> LLMResponse:
         resolved = self.resolve_model(task_type, model)
         info = MODEL_REGISTRY.get(resolved, {"provider": "openrouter", "credit_multiplier": 1.0})
@@ -164,6 +166,25 @@ class LLMClient:
 
         completion_tokens = self._estimate_tokens(response["content"])
         credits = self._calculate_credits(resolved, prompt_tokens, completion_tokens)
+
+        # Track per-agent cost if db and agent_id provided
+        if agent_id and db:
+            try:
+                from sqlalchemy import select
+                from models import Agent
+                res = await db.execute(select(Agent).where(Agent.agent_id == agent_id))
+                agent = res.scalar_one_or_none()
+                if agent:
+                    agent.llm_tokens_used += prompt_tokens + completion_tokens
+                    agent.llm_cost_usd += credits
+                    agent.budget_spent += credits
+                    await db.commit()
+                    # Auto-pause if budget exceeded
+                    if agent.monthly_budget > 0 and agent.budget_spent >= agent.monthly_budget:
+                        agent.status = "paused"
+                        await db.commit()
+            except Exception:
+                pass
 
         return LLMResponse(
             content=response["content"],

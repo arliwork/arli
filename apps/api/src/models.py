@@ -9,6 +9,23 @@ from database import Base
 def generate_uuid():
     return str(uuid.uuid4())
 
+class Company(Base):
+    __tablename__ = "companies"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    company_id = Column(String(255), unique=True, nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    goal = Column(Text, nullable=True)
+    owner_id = Column(String, ForeignKey("users.id"), nullable=False)
+    monthly_budget = Column(Numeric(18, 2), default=1000)
+    budget_spent = Column(Numeric(18, 2), default=0)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    owner = relationship("User", lazy="selectin")
+
+
 class User(Base):
     __tablename__ = "users"
     
@@ -31,7 +48,7 @@ class User(Base):
 
 class Agent(Base):
     __tablename__ = "agents"
-    
+
     id = Column(String, primary_key=True, default=generate_uuid)
     agent_id = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
@@ -39,6 +56,8 @@ class Agent(Base):
     description = Column(Text, nullable=True)
     owner_id = Column(String, ForeignKey("users.id"), nullable=False)
     creator_id = Column(String, ForeignKey("users.id"), nullable=False)
+    manager_id = Column(String, ForeignKey("agents.id"), nullable=True)
+    company_id = Column(String, ForeignKey("companies.id"), nullable=True)
     level = Column(Integer, default=1)
     tier = Column(String(50), default="NOVICE")
     total_xp = Column(Integer, default=0)
@@ -47,6 +66,10 @@ class Agent(Base):
     total_revenue = Column(Numeric(18, 2), default=0)
     market_value = Column(Numeric(18, 2), default=50)
     hourly_rate = Column(Numeric(18, 2), default=10)
+    monthly_budget = Column(Numeric(18, 2), default=100)
+    budget_spent = Column(Numeric(18, 2), default=0)
+    llm_tokens_used = Column(Integer, default=0)
+    llm_cost_usd = Column(Numeric(18, 4), default=0)
     is_listed = Column(Boolean, default=False)
     listing_price = Column(Numeric(18, 2), nullable=True)
     nft_token_id = Column(String(255), nullable=True)
@@ -54,9 +77,11 @@ class Agent(Base):
     status = Column(String(50), default="idle")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    
+
     owner = relationship("User", back_populates="agents", foreign_keys=[owner_id], lazy="selectin")
     creator = relationship("User", back_populates="created_agents", foreign_keys=[creator_id], lazy="selectin")
+    manager = relationship("Agent", remote_side=[id], lazy="selectin")
+    subordinates = relationship("Agent", back_populates="manager", lazy="selectin")
     expertise = relationship("AgentExpertise", back_populates="agent", lazy="selectin", cascade="all, delete-orphan")
     tasks = relationship("Task", back_populates="agent", lazy="selectin", cascade="all, delete-orphan")
     achievements = relationship("Achievement", back_populates="agent", lazy="selectin", cascade="all, delete-orphan")
@@ -164,7 +189,7 @@ class Achievement(Base):
 
 class ScheduledWorkflow(Base):
     __tablename__ = "scheduled_workflows"
-    
+
     id = Column(String, primary_key=True, default=generate_uuid)
     schedule_id = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
@@ -179,5 +204,70 @@ class ScheduledWorkflow(Base):
     next_run_at = Column(DateTime(timezone=True), nullable=True)
     run_count = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     owner = relationship("User", lazy="selectin")
+
+
+class Approval(Base):
+    __tablename__ = "approvals"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    approval_id = Column(String(255), unique=True, nullable=False, index=True)
+    company_id = Column(String, ForeignKey("companies.id"), nullable=True)
+    # Types: hire_agent, ceo_strategy, budget_override, board_override
+    approval_type = Column(String(50), nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    # JSON payload with context
+    payload = Column(JSON, default=dict)
+    status = Column(String(50), default="pending")  # pending, approved, rejected, revision_requested
+    requested_by_agent_id = Column(String, ForeignKey("agents.id"), nullable=True)
+    approved_by_user_id = Column(String, ForeignKey("users.id"), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    decided_at = Column(DateTime(timezone=True), nullable=True)
+
+    requested_by_agent = relationship("Agent", lazy="selectin")
+    approved_by_user = relationship("User", lazy="selectin")
+
+
+class ActivityLog(Base):
+    __tablename__ = "activity_logs"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    company_id = Column(String, ForeignKey("companies.id"), nullable=True)
+    actor_type = Column(String(50), nullable=False)  # user, agent, system
+    actor_id = Column(String, nullable=False)
+    actor_name = Column(String(255), nullable=True)
+    event_type = Column(String(100), nullable=False)  # task_created, agent_hired, approval_requested, etc.
+    event_description = Column(Text, nullable=False)
+    metadata = Column(JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AgentSecret(Base):
+    __tablename__ = "agent_secrets"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
+    key_name = Column(String(100), nullable=False)
+    # In production: encrypt this with a master key
+    encrypted_value = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    agent = relationship("Agent", lazy="selectin")
+
+
+class TaskComment(Base):
+    __tablename__ = "task_comments"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    task_id = Column(String, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False)
+    author_type = Column(String(50), nullable=False)  # agent, user
+    author_id = Column(String, nullable=False)
+    author_name = Column(String(255), nullable=True)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    task = relationship("Task", lazy="selectin")

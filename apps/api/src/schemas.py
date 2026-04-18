@@ -189,4 +189,108 @@ class PlatformStats(BaseModel):
     total_revenue_generated: Optional[Decimal]
     total_tasks: int
     total_users: int
-    total_sales: int
+
+# Company schemas
+class CompanyCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    goal: Optional[str] = None
+    monthly_budget: Optional[Decimal] = Decimal("1000")
+
+class CompanyOut(BaseModel):
+    id: str
+    company_id: str
+    name: str
+    description: Optional[str]
+    goal: Optional[str]
+    owner_id: str
+    monthly_budget: Decimal
+    budget_spent: Decimal
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# Approval schemas
+class ApprovalCreate(BaseModel):
+    company_id: Optional[str] = None
+    approval_type: str  # hire_agent, ceo_strategy, budget_override, board_override
+    title: str
+    description: Optional[str] = None
+    payload: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    requested_by_agent_id: Optional[str] = None
+
+class ApprovalUpdate(BaseModel):
+    status: Optional[str] = None
+    rejection_reason: Optional[str] = None
+
+class ApprovalOut(BaseModel):
+    id: str
+    approval_id: str
+    company_id: Optional[str]
+    approval_type: str
+    title: str
+    description: Optional[str]
+    payload: Dict[str, Any]
+    status: str
+    requested_by_agent_id: Optional[str]
+    approved_by_user_id: Optional[str]
+    rejection_reason: Optional[str]
+    created_at: datetime
+    decided_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+class ApprovalListResponse(BaseModel):
+    items: List[ApprovalOut]
+    total: int
+
+# Activity Log schemas
+class ActivityLogCreate(BaseModel):
+    company_id: Optional[str] = None
+    actor_type: str
+    actor_id: str
+    actor_name: str
+    event_type: str
+    event_description: str
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+class ActivityLogOut(BaseModel):
+    id: str
+    company_id: Optional[str]
+    actor_type: str
+    actor_id: str
+    actor_name: Optional[str]
+    event_type: str
+    event_description: str
+    metadata: Dict[str, Any]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ActivityLogListResponse(BaseModel):
+    items: List[ActivityLogOut]
+    total: int
+
+# Task Comment schemas
+class TaskCommentCreate(BaseModel):
+    task_id: str
+    author_type: str
+    author_id: str
+    author_name: Optional[str] = None
+    content: str
+
+class TaskCommentOut(BaseModel):
+    id: str
+    task_id: str
+    author_type: str
+    author_id: str
+    author_name: Optional[str]
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

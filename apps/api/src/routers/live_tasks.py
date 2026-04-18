@@ -46,7 +46,7 @@ class TaskQueueStatus(BaseModel):
 
 # ─── Task Handlers ──────────────────────────────────────────────────
 
-async def _handle_coding(params: dict) -> dict:
+async def _handle_coding(params: dict, agent_id: str = None, db = None) -> dict:
     """Execute coding task via LLM"""
     from services.llm_client import get_llm_client
     client = get_llm_client()
@@ -59,10 +59,12 @@ async def _handle_coding(params: dict) -> dict:
         ],
         task_type="coding",
         max_tokens=4000,
+        agent_id=agent_id,
+        db=db,
     )
     return {"success": True, "output": result.content, "credits_used": result.credits_used}
 
-async def _handle_research(params: dict) -> dict:
+async def _handle_research(params: dict, agent_id: str = None, db = None) -> dict:
     """Execute research task"""
     from services.llm_client import get_llm_client
     client = get_llm_client()
@@ -74,10 +76,12 @@ async def _handle_research(params: dict) -> dict:
         ],
         task_type="reasoning",
         max_tokens=2000,
+        agent_id=agent_id,
+        db=db,
     )
     return {"success": True, "output": result.content, "credits_used": result.credits_used}
 
-async def _handle_content(params: dict) -> dict:
+async def _handle_content(params: dict, agent_id: str = None, db = None) -> dict:
     """Execute content creation task"""
     from services.llm_client import get_llm_client
     client = get_llm_client()
@@ -89,6 +93,8 @@ async def _handle_content(params: dict) -> dict:
         ],
         task_type="default",
         max_tokens=3000,
+        agent_id=agent_id,
+        db=db,
     )
     word_count = len(result.content.split())
     return {"success": True, "output": result.content, "word_count": word_count, "credits_used": result.credits_used}
@@ -132,11 +138,13 @@ async def _broadcast_status(task_id: str, status: str, data: dict = None):
         if ws in _websocket_clients:
             _websocket_clients.remove(ws)
 
-async def _execute_with_retry(handler: Callable, params: dict, max_retries: int = 2) -> dict:
+async def _execute_with_retry(handler: Callable, params: dict, agent_id: str = None, db = None, max_retries: int = 2) -> dict:
     """Execute handler with exponential backoff retry"""
     last_error = None
     for attempt in range(max_retries + 1):
         try:
+            if agent_id and db:
+                return await handler(params, agent_id=agent_id, db=db)
             return await handler(params)
         except Exception as e:
             last_error = e
@@ -157,8 +165,8 @@ async def _process_task(task_id: str, task: dict, db: AsyncSession):
     category = task.get("category", "generic").lower()
     handler = _task_handlers.get(category, _task_handlers.get("research"))
 
-    # Execute with retry
-    result = await _execute_with_retry(handler, task.get("parameters", {}))
+    # Execute with retry, passing agent_id and db for cost tracking
+    result = await _execute_with_retry(handler, task.get("parameters", {}), agent_id, db)
 
     # Update agent XP if successful
     agent_id = task.get("agent_id")
