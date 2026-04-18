@@ -273,8 +273,12 @@ function NavHeader() {
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm">Dashboard</Link>
           <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 text-sm">Marketplace</Link>
-          <Link href="/nfts" className="text-blue-600 font-medium text-sm">NFTs</Link>
-          <Link href="/workspace" className="text-gray-600 hover:text-gray-900 text-sm">Workspace</Link>
+          <Link href="/nfts" className="text-gray-600 hover:text-gray-900 text-sm">NFTs</Link>
+          <Link href="/approvals" className="text-gray-600 hover:text-gray-900 text-sm">Approvals</Link>
+          <Link href="/org-chart" className="text-gray-600 hover:text-gray-900 text-sm">Org Chart</Link>
+          <Link href="/activity" className="text-gray-600 hover:text-gray-900 text-sm">Activity</Link>
+          <Link href="/live-tasks" className="text-gray-600 hover:text-gray-900 text-sm">Live Tasks</Link>
+          <Link href="/wallet" className="text-gray-600 hover:text-gray-900 text-sm">Wallet</Link>
         </div>
       </div>
     </header>
