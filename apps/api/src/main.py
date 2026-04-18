@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from config import settings
 from database import engine, Base
 import models  # noqa: F401 — registers tables with Base.metadata
-from routers import auth, agents, tasks, marketplace, orchestration, stats, companies, workspaces, scheduler, credits, webhooks, nfts
+from routers import auth, agents, tasks, marketplace, orchestration, stats, companies, workspaces, scheduler, credits, webhooks, nfts, live_tasks
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -50,6 +50,7 @@ app.include_router(scheduler.router)
 app.include_router(credits.router)
 app.include_router(webhooks.router)
 app.include_router(nfts.router)
+app.include_router(live_tasks.router)
 
 if __name__ == "__main__":
     import uvicorn
