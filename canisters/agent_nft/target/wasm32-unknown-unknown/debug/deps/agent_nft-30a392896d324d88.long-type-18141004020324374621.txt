@@ -1,0 +1,1 @@
+Ref<'_, StableBTreeMap<candid::Principal, std::vec::Vec<u64>, VirtualMemory<Ic0StableMemory>>>

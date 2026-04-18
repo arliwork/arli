@@ -85,6 +85,8 @@ export default function Dashboard() {
       <NavHeader />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        <DemoPanel onRefresh={fetchData} />
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard title="Total Revenue" value={`$${stats.totalRevenue.toLocaleString()}`} positive />
           <StatCard title="Active Agents" value={stats.activeAgents.toString()} positive />
@@ -201,6 +203,72 @@ function QuickActionCard({ title, description, link }: { title: string; descript
       <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
       <p className="text-sm text-gray-600">{description}</p>
     </Link>
+  );
+}
+
+function DemoPanel({ onRefresh }: { onRefresh: () => void }) {
+  const [running, setRunning] = useState(false);
+  const [lastResult, setLastResult] = useState<any>(null);
+
+  const setupDemo = async () => {
+    setRunning(true);
+    try {
+      const res = await fetch(`${API_URL}/autonomous/demo/setup-alpha-fund`, { method: "POST" });
+      const data = await res.json();
+      toast.success(data.message || "Demo setup complete!");
+      onRefresh();
+    } catch (e) {
+      toast.error("Demo setup failed");
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const runCycle = async () => {
+    setRunning(true);
+    try {
+      const res = await fetch(`${API_URL}/autonomous/demo/run-cycle`, { method: "POST" });
+      const data = await res.json();
+      setLastResult(data);
+      toast.success(`Heartbeat cycle: ${data.agents_processed} agents processed`);
+      onRefresh();
+    } catch (e) {
+      toast.error("Cycle failed");
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-indigo-900 to-blue-900 text-white rounded-xl p-6 mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold">Investor Demo — Alpha Fund</h2>
+          <p className="text-blue-200 text-sm mt-1">Setup an AI company, watch the CEO propose strategy, approve hires, and see agents execute tasks.</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={setupDemo}
+            disabled={running}
+            className="bg-white text-indigo-900 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition disabled:opacity-50"
+          >
+            {running ? "Setting up..." : "1. Setup Alpha Fund"}
+          </button>
+          <button
+            onClick={runCycle}
+            disabled={running}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition disabled:opacity-50"
+          >
+            {running ? "Running..." : "2. Run Heartbeat"}
+          </button>
+        </div>
+      </div>
+      {lastResult && (
+        <div className="bg-white/10 rounded-lg p-3 text-sm font-mono">
+          Processed {lastResult.agents_processed} agents at {new Date(lastResult.run_at).toLocaleTimeString()}
+        </div>
+      )}
+    </div>
   );
 }
 
