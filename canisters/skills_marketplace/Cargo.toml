@@ -1,0 +1,17 @@
+[package]
+name = "skills_marketplace"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ic-cdk = "0.16"
+ic-cdk-macros = "0.16"
+ic-stable-structures = "0.6"
+candid = "0.10"
+serde = { version = "1.0", features = ["derive"] }
+
+[features]
+default = []

@@ -1,5 +1,6 @@
 """Agent management and marketplace routes"""
 import uuid
+import os
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +20,7 @@ def generate_agent_id():
 @router.post("", response_model=AgentOut)
 async def create_agent(
     data: AgentCreate,
+    mint_nft: bool = False,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Depends(get_current_active_user),
 ):
@@ -34,6 +36,31 @@ async def create_agent(
     db.add(agent)
     await db.commit()
     await db.refresh(agent)
+
+    # Mint NFT if requested and user has ICP principal
+    if mint_nft and current_user.principal:
+        try:
+            from icp_integration import icp_client
+            token_id = await icp_client.mint_agent_nft(
+                agent_id=agent.agent_id,
+                owner_principal=current_user.principal,
+                metadata={
+                    "name": agent.name,
+                    "description": agent.description or "",
+                    "image": f"https://api.dicebear.com/7.x/bottts/svg?seed={agent.agent_id}",
+                    "level": agent.level,
+                    "tier": agent.tier,
+                    "market_value": int(agent.market_value),
+                }
+            )
+            agent.nft_token_id = str(token_id)
+            await db.commit()
+            await db.refresh(agent)
+        except Exception as e:
+            # NFT mint failed but agent is created — don't fail the whole request
+            import logging
+            logging.warning(f"NFT mint failed for agent {agent.agent_id}: {e}")
+
     return AgentOut.model_validate(agent)
 
 @router.get("", response_model=AgentListResponse)

@@ -215,6 +215,7 @@ function NavHeader() {
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm">Dashboard</Link>
           <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 text-sm">Marketplace</Link>
+          <Link href="/nfts" className="text-gray-600 hover:text-gray-900 text-sm">NFTs</Link>
           <Link href="/skills" className="text-gray-600 hover:text-gray-900 text-sm">Skills</Link>
           <Link href="/workspace" className="text-gray-600 hover:text-gray-900 text-sm">Workspace</Link>
         </div>

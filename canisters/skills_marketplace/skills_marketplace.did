@@ -1,0 +1,51 @@
+type SkillListing = record {
+  id : text;
+  name : text;
+  description : text;
+  creator : principal;
+  price : nat64;
+  category : text;
+  tags : vec text;
+  rating_sum : nat64;
+  rating_count : nat64;
+  purchase_count : nat64;
+  created_at : nat64;
+  is_active : bool;
+};
+
+type PurchaseRecord = record {
+  purchase_id : text;
+  skill_id : text;
+  buyer : principal;
+  seller : principal;
+  price : nat64;
+  platform_fee : nat64;
+  creator_royalty : nat64;
+  timestamp : nat64;
+};
+
+type MarketplaceStats = record {
+  total_listings : nat;
+  total_purchases : nat;
+  total_volume : nat64;
+  platform_revenue : nat64;
+};
+
+service : {
+  create_listing : (text, text, nat64, text, vec text) -> (SkillListing);
+  get_listing : (text) -> (opt SkillListing) query;
+  get_all_listings : (nat, nat) -> (vec SkillListing) query;
+  get_listings_by_category : (text) -> (vec SkillListing) query;
+  search_listings : (text) -> (vec SkillListing) query;
+  update_listing : (text, opt nat64, opt bool) -> ();
+
+  record_purchase : (text, principal, nat64) -> (PurchaseRecord);
+  get_purchase : (text) -> (opt PurchaseRecord) query;
+  get_purchases_by_buyer : (principal) -> (vec PurchaseRecord) query;
+  get_purchases_by_seller : (principal) -> (vec PurchaseRecord) query;
+
+  get_stats : () -> (MarketplaceStats) query;
+
+  add_admin : (principal) -> ();
+  remove_admin : (principal) -> ();
+}

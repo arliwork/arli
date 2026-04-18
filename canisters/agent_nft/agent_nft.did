@@ -1,9 +1,14 @@
+type Trait = record {
+  trait_type : text;
+  value : text;
+};
+
 type TokenMetadata = record {
   token_uri : text;
   name : text;
   description : text;
   image : text;
-  attributes : vec record { text; text };
+  attributes : vec Trait;
 };
 
 type TokenInfo = record {
@@ -17,11 +22,6 @@ type TokenInfo = record {
   minted_at : nat64;
 };
 
-type Trait = record {
-  trait_type : text;
-  value : text;
-};
-
 type SaleRecord = record {
   token_id : nat;
   seller : principal;
@@ -30,31 +30,54 @@ type SaleRecord = record {
   timestamp : nat64;
 };
 
+type CollectionInfo = record {
+  name : text;
+  symbol : text;
+  description : text;
+  total_supply : nat;
+  logo : text;
+};
+
+type Event = variant {
+  Mint : record { token_id : nat; to : principal; agent_id : text };
+  Transfer : record { from : principal; to : principal; token_id : nat };
+  Approval : record { owner : principal; approved : principal; token_id : nat };
+  ApprovalForAll : record { owner : principal; operator : principal; approved : bool };
+};
+
 service : {
+  // Initialization
   init : () -> ();
-  
+
   // DIP-721 Core
   mint : (principal, TokenMetadata, text, nat32, text, nat64) -> (nat);
+  balance_of : (principal) -> (nat) query;
   owner_of : (nat) -> (opt principal) query;
+  owner_token_ids : (principal) -> (vec nat) query;
   transfer_from : (principal, principal, nat) -> ();
   approve : (principal, nat) -> ();
   get_approved : (nat) -> (opt principal) query;
   set_approval_for_all : (principal, bool) -> ();
   is_approved_for_all : (principal, principal) -> (bool) query;
-  
+
   // Metadata
   token_metadata : (nat) -> (opt TokenMetadata) query;
   get_token_info : (nat) -> (opt TokenInfo) query;
   tokens_of : (principal) -> (vec nat) query;
   total_supply : () -> (nat) query;
   get_all_tokens : (nat, nat) -> (vec TokenInfo) query;
-  
-  // Collection Info
-  name : () -> (text) query;
-  symbol : () -> (text) query;
-  description : () -> (text) query;
-  
+  get_collection_info : () -> (CollectionInfo) query;
+  supported_interfaces : () -> (vec text) query;
+
   // Sales History
   record_sale : (nat, principal, principal, nat64) -> ();
   get_sale_history : (text) -> (vec SaleRecord) query;
+
+  // Admin
+  add_admin : (principal) -> ();
+  remove_admin : (principal) -> ();
+  get_admins : () -> (vec principal) query;
+
+  // Events
+  get_events : () -> (vec Event) query;
 }

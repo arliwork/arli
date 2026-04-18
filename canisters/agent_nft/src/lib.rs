@@ -1,14 +1,65 @@
-use candid::{CandidType, Deserialize, Principal, Nat};
+use candid::{CandidType, Deserialize, Principal, Nat, Encode, Decode};
 use ic_cdk::{query, update, init};
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    DefaultMemoryImpl, StableBTreeMap, StableCell,
+    DefaultMemoryImpl, StableBTreeMap, StableCell, Storable,
 };
+use std::borrow::Cow;
 use std::cell::RefCell;
-use std::collections::HashMap;
 
 // DIP-721 Standard Implementation for Agent NFTs
 type Memory = VirtualMemory<DefaultMemoryImpl>;
+
+// ─── Storable helpers ───────────────────────────────────────────────
+
+fn to_bytes<T: CandidType>(value: &T) -> Cow<[u8]> {
+    Cow::Owned(Encode!(value).expect("encode failed"))
+}
+
+fn from_bytes<T: CandidType + for<'de> Deserialize<'de>>(bytes: Cow<[u8]>) -> T {
+    Decode!(&bytes, T).expect("decode failed")
+}
+
+impl Storable for TokenMetadata {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        to_bytes(self)
+    }
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        from_bytes(bytes)
+    }
+    const BOUND: ic_stable_structures::storable::Bound =
+        ic_stable_structures::storable::Bound::Unbounded;
+}
+
+impl Storable for TokenInfo {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        to_bytes(self)
+    }
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        from_bytes(bytes)
+    }
+    const BOUND: ic_stable_structures::storable::Bound =
+        ic_stable_structures::storable::Bound::Unbounded;
+}
+
+impl Storable for SaleRecord {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        to_bytes(self)
+    }
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        from_bytes(bytes)
+    }
+    const BOUND: ic_stable_structures::storable::Bound =
+        ic_stable_structures::storable::Bound::Unbounded;
+}
+
+// ─── Types ───────────────────────────────────────────────────────────
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct Trait {
+    pub trait_type: String,
+    pub value: String,
+}
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct TokenMetadata {
@@ -17,12 +68,6 @@ pub struct TokenMetadata {
     pub description: String,
     pub image: String,
     pub attributes: Vec<Trait>,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct Trait {
-    pub trait_type: String,
-    pub value: String,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -38,61 +83,6 @@ pub struct TokenInfo {
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct ApprovalInfo {
-    pub approved: Principal,
-    pub token_id: Nat,
-}
-
-// State	hread_local! {
-    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
-        MemoryManager::init(DefaultMemoryImpl::default())
-    );
-    
-    // Token storage
-    static TOKENS: RefCell<StableBTreeMap<Nat, TokenInfo, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))
-        )
-    );
-    
-    // Owner -> tokens mapping
-    static OWNER_TOKENS: RefCell<StableBTreeMap<Principal, Vec<Nat>, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1)))
-        )
-    );
-    
-    // Approvals: token_id -> approved principal
-    static APPROVALS: RefCell<StableBTreeMap<Nat, Principal, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2)))
-        )
-    );
-    
-    // Operator approvals: owner -> operator -> bool
-    static OPERATOR_APPROVALS: RefCell<StableBTreeMap<(Principal, Principal), bool, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3)))
-        )
-    );
-    
-    // Token counter
-    static TOKEN_COUNTER: RefCell<StableCell<Nat, Memory>> = RefCell::new(
-        StableCell::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
-            Nat::from(0u64)
-        ).expect("Failed to init token counter")
-    );
-    
-    // Sale history
-    static SALE_HISTORY: RefCell<StableBTreeMap<String, Vec<SaleRecord>, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5)))
-        )
-    );
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct SaleRecord {
     pub token_id: Nat,
     pub seller: Principal,
@@ -101,7 +91,6 @@ pub struct SaleRecord {
     pub timestamp: u64,
 }
 
-// DIP-721 Events
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub enum Event {
     Mint {
@@ -126,15 +115,181 @@ pub enum Event {
     },
 }
 
-// Initialize
-#[init]
-fn init() {
-    ic_cdk::println!("Agent NFT Canister initialized");
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct CollectionInfo {
+    pub name: String,
+    pub symbol: String,
+    pub description: String,
+    pub total_supply: Nat,
+    pub logo: String,
 }
 
-// DIP-721 Core Functions
+// ─── State ───────────────────────────────────────────────────────────
 
-/// Mint new NFT for an agent
+thread_local! {
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
+        MemoryManager::init(DefaultMemoryImpl::default())
+    );
+
+    // Token storage: token_id -> TokenInfo
+    static TOKENS: RefCell<StableBTreeMap<u64, TokenInfo, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))
+        )
+    );
+
+    // Owner -> token_ids mapping (stored as comma-separated u64 string for simplicity)
+    static OWNER_TOKENS: RefCell<StableBTreeMap<Principal, String, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1)))
+        )
+    );
+
+    // Single-token approvals: token_id -> approved principal
+    static APPROVALS: RefCell<StableBTreeMap<u64, Principal, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2)))
+        )
+    );
+
+    // Operator approvals: (owner, operator) -> bool
+    static OPERATOR_APPROVALS: RefCell<StableBTreeMap<(Principal, Principal), bool, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3)))
+        )
+    );
+
+    // Token counter (next token_id)
+    static TOKEN_COUNTER: RefCell<StableCell<u64, Memory>> = RefCell::new(
+        StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
+            0u64
+        ).expect("Failed to init token counter")
+    );
+
+    // Sale history per agent_id (stored as JSON string)
+    static SALE_HISTORY: RefCell<StableBTreeMap<String, String, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5)))
+        )
+    );
+
+    // Admin / authorized minters
+    static ADMINS: RefCell<StableBTreeMap<Principal, bool, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(6)))
+        )
+    );
+
+    // Events log (in-memory, not stable)
+    static EVENTS: RefCell<Vec<Event>> = RefCell::new(Vec::new());
+}
+
+// ─── Owner tokens helpers ───────────────────────────────────────────
+
+fn get_owner_tokens(owner: Principal) -> Vec<u64> {
+    OWNER_TOKENS.with(|ot| {
+        ot.borrow().get(&owner)
+            .map(|s| {
+                if s.is_empty() {
+                    Vec::new()
+                } else {
+                    s.split(',')
+                        .filter_map(|x| x.parse::<u64>().ok())
+                        .collect()
+                }
+            })
+            .unwrap_or_default()
+    })
+}
+
+fn set_owner_tokens(owner: Principal, tokens: Vec<u64>) {
+    OWNER_TOKENS.with(|ot| {
+        let s = tokens.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+        ot.borrow_mut().insert(owner, s);
+    });
+}
+
+// ─── Sale history helpers ───────────────────────────────────────────
+fn get_sale_records(agent_id: &String) -> Vec<SaleRecord> {
+    SALE_HISTORY.with(|sh| {
+        sh.borrow()
+            .get(agent_id)
+            .and_then(|s| Decode!(&s.into_bytes(), Vec<SaleRecord>).ok())
+            .unwrap_or_default()
+    })
+}
+
+fn set_sale_records(agent_id: &String, records: Vec<SaleRecord>) {
+    SALE_HISTORY.with(|sh| {
+        if let Ok(bytes) = Encode!(&records) {
+            sh.borrow_mut().insert(agent_id.clone(), String::from_utf8_lossy(&bytes).to_string());
+        }
+    });
+}
+
+// ─── Initialization ─────────────────────────────────────────────────
+
+#[init]
+fn init() {
+    let caller = ic_cdk::caller();
+    ADMINS.with(|admins| {
+        admins.borrow_mut().insert(caller, true);
+    });
+    ic_cdk::println!("Agent NFT Canister initialized. Admin: {}", caller.to_text());
+}
+
+// ─── Admin helpers ──────────────────────────────────────────────────
+
+fn is_admin(caller: Principal) -> bool {
+    ADMINS.with(|admins| admins.borrow().get(&caller).unwrap_or(false))
+}
+
+fn assert_admin() -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    if is_admin(caller) {
+        Ok(())
+    } else {
+        Err("Unauthorized: admin only".to_string())
+    }
+}
+
+fn is_approved_or_owner(caller: Principal, owner: Principal, token_id: u64) -> bool {
+    if caller == owner {
+        return true;
+    }
+    // Check single-token approval
+    let token_approved = APPROVALS.with(|a| a.borrow().get(&token_id));
+    if token_approved == Some(caller) {
+        return true;
+    }
+    // Check operator approval
+    OPERATOR_APPROVALS.with(|ops| {
+        ops.borrow().get(&(owner, caller)).unwrap_or(false)
+    })
+}
+
+fn assert_owner_or_approved(token_id: u64) -> Result<Principal, String> {
+    let caller = ic_cdk::caller();
+    let owner = TOKENS.with(|t| {
+        t.borrow().get(&token_id).map(|info| info.owner)
+    });
+    match owner {
+        Some(o) => {
+            if is_approved_or_owner(caller, o, token_id) {
+                Ok(o)
+            } else {
+                Err("Not owner nor approved".to_string())
+            }
+        }
+        None => Err("Token does not exist".to_string()),
+    }
+}
+
+// ─── DIP-721 Core ───────────────────────────────────────────────────
+
+/// Mint a new Agent NFT.
+/// Only admins / authorized minters can call.
 #[update]
 fn mint(
     to: Principal,
@@ -144,129 +299,153 @@ fn mint(
     tier: String,
     market_value: u64,
 ) -> Result<Nat, String> {
-    let caller = ic_cdk::caller();
-    
-    // Only experience registry canister should mint
-    // TODO: Add proper authorization check
-    
-    let token_id = TOKEN_COUNTER.with(|counter| {
-        let current = counter.borrow().get().clone();
-        let next = Nat::from(current.0.to_u64().unwrap() + 1);
-        counter.borrow_mut().set(next.clone()).expect("Failed to increment counter");
+    assert_admin()?;
+
+    let token_id_u64 = TOKEN_COUNTER.with(|counter| {
+        let current = *counter.borrow().get();
+        let next = current + 1;
+        counter.borrow_mut().set(next).expect("increment counter");
         next
     });
-    
+
     let token_info = TokenInfo {
-        token_id: token_id.clone(),
+        token_id: Nat::from(token_id_u64),
         owner: to,
         metadata,
-        agent_id,
+        agent_id: agent_id.clone(),
         level,
         tier,
         market_value,
         minted_at: ic_cdk::api::time(),
     };
-    
-    // Store token
+
     TOKENS.with(|tokens| {
-        tokens.borrow_mut().insert(token_id.clone(), token_info);
+        tokens.borrow_mut().insert(token_id_u64, token_info);
     });
-    
-    // Update owner mapping
-    OWNER_TOKENS.with(|owner_tokens| {
-        let mut owner_tokens = owner_tokens.borrow_mut();
-        let mut tokens = owner_tokens.get(&to).unwrap_or_default();
-        tokens.push(token_id.clone());
-        owner_tokens.insert(to, tokens);
+
+    let mut list = get_owner_tokens(to);
+    list.push(token_id_u64);
+    set_owner_tokens(to, list);
+
+    EVENTS.with(|ev| {
+        ev.borrow_mut().push(Event::Mint {
+            token_id: Nat::from(token_id_u64),
+            to,
+            agent_id,
+        });
     });
-    
-    // Log event
-    ic_cdk::println!("Minted token {} for {}", token_id.0, to.to_text());
-    
-    Ok(token_id)
+
+    ic_cdk::println!("Minted token {} for {}", token_id_u64, to.to_text());
+    Ok(Nat::from(token_id_u64))
 }
 
-/// Get owner of a token
+#[query]
+fn balance_of(owner: Principal) -> Nat {
+    let list = get_owner_tokens(owner);
+    Nat::from(list.len() as u64)
+}
+
 #[query]
 fn owner_of(token_id: Nat) -> Option<Principal> {
-    TOKENS.with(|tokens| {
-        tokens.borrow().get(&token_id).map(|t| t.owner)
-    })
+    let id: u64 = token_id.0.try_into().ok()?;
+    TOKENS.with(|t| t.borrow().get(&id).map(|info| info.owner))
 }
 
-/// Transfer token
+#[query]
+fn owner_token_ids(owner: Principal) -> Vec<Nat> {
+    get_owner_tokens(owner)
+        .into_iter()
+        .map(Nat::from)
+        .collect()
+}
+
 #[update]
 fn transfer_from(from: Principal, to: Principal, token_id: Nat) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    
-    // Check authorization
-    let is_authorized = is_approved_or_owner(caller, from, token_id.clone());
-    if !is_authorized {
+    let id: u64 = token_id.0.try_into().map_err(|_| "Invalid token_id")?;
+
+    let owner = TOKENS.with(|t| t.borrow().get(&id).map(|info| info.owner));
+    let owner = owner.ok_or("Token does not exist")?;
+    if owner != from {
+        return Err("From address is not owner".to_string());
+    }
+    if !is_approved_or_owner(caller, from, id) {
         return Err("Not authorized to transfer".to_string());
     }
-    
-    // Perform transfer
-    TOKENS.with(|tokens| {
-        let mut tokens = tokens.borrow_mut();
-        if let Some(mut token) = tokens.get(&token_id) {
-            if token.owner != from {
-                return Err("From address is not owner".to_string());
-            }
-            
-            // Update token owner
-            token.owner = to;
-            tokens.insert(token_id.clone(), token);
-            
-            // Update owner mappings
-            update_owner_tokens(from, to, token_id.clone());
-            
-            // Clear approvals
-            APPROVALS.with(|approvals| {
-                approvals.borrow_mut().remove(&token_id);
-            });
-            
-            Ok(())
-        } else {
-            Err("Token not found".to_string())
-        }
-    })
-}
 
-/// Approve address to spend token
-#[update]
-fn approve(approved: Principal, token_id: Nat) -> Result<(), String> {
-    let caller = ic_cdk::caller();
-    
-    let is_owner = TOKENS.with(|tokens| {
-        tokens.borrow().get(&token_id).map(|t| t.owner == caller).unwrap_or(false)
+    // Update token owner
+    TOKENS.with(|t| {
+        let mut map = t.borrow_mut();
+        if let Some(mut info) = map.get(&id) {
+            info.owner = to;
+            map.insert(id, info);
+        }
     });
-    
-    if !is_owner {
-        return Err("Not token owner".to_string());
-    }
-    
-    APPROVALS.with(|approvals| {
-        approvals.borrow_mut().insert(token_id, approved);
+
+    // Update owner mappings
+    let mut from_list = get_owner_tokens(from);
+    from_list.retain(|&x| x != id);
+    set_owner_tokens(from, from_list);
+
+    let mut to_list = get_owner_tokens(to);
+    to_list.push(id);
+    set_owner_tokens(to, to_list);
+
+    // Clear single-token approval
+    APPROVALS.with(|a| {
+        a.borrow_mut().remove(&id);
     });
-    
+
+    EVENTS.with(|ev| {
+        ev.borrow_mut().push(Event::Transfer {
+            from,
+            to,
+            token_id: Nat::from(id),
+        });
+    });
+
     Ok(())
 }
 
-/// Get approved address for token
-#[query]
-fn get_approved(token_id: Nat) -> Option<Principal> {
-    APPROVALS.with(|approvals| approvals.borrow().get(&token_id))
+#[update]
+fn approve(approved: Principal, token_id: Nat) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    let id: u64 = token_id.0.try_into().map_err(|_| "Invalid token_id")?;
+
+    let is_owner = TOKENS.with(|t| {
+        t.borrow().get(&id).map(|info| info.owner == caller).unwrap_or(false)
+    });
+    if !is_owner {
+        return Err("Not token owner".to_string());
+    }
+
+    APPROVALS.with(|a| {
+        a.borrow_mut().insert(id, approved);
+    });
+
+    EVENTS.with(|ev| {
+        ev.borrow_mut().push(Event::Approval {
+            owner: caller,
+            approved,
+            token_id: Nat::from(id),
+        });
+    });
+
+    Ok(())
 }
 
-/// Set approval for all tokens
+#[query]
+fn get_approved(token_id: Nat) -> Option<Principal> {
+    let id: u64 = token_id.0.try_into().ok()?;
+    APPROVALS.with(|a| a.borrow().get(&id))
+}
+
 #[update]
 fn set_approval_for_all(operator: Principal, approved: bool) -> Result<(), String> {
     let caller = ic_cdk::caller();
-    
     if caller == operator {
         return Err("Cannot approve self".to_string());
     }
-    
     OPERATOR_APPROVALS.with(|ops| {
         if approved {
             ops.borrow_mut().insert((caller, operator), true);
@@ -274,11 +453,18 @@ fn set_approval_for_all(operator: Principal, approved: bool) -> Result<(), Strin
             ops.borrow_mut().remove(&(caller, operator));
         }
     });
-    
+
+    EVENTS.with(|ev| {
+        ev.borrow_mut().push(Event::ApprovalForAll {
+            owner: caller,
+            operator,
+            approved,
+        });
+    });
+
     Ok(())
 }
 
-/// Check if operator is approved for all
 #[query]
 fn is_approved_for_all(owner: Principal, operator: Principal) -> bool {
     OPERATOR_APPROVALS.with(|ops| {
@@ -286,48 +472,62 @@ fn is_approved_for_all(owner: Principal, operator: Principal) -> bool {
     })
 }
 
-/// Get token metadata
+// ─── Metadata ───────────────────────────────────────────────────────
+
 #[query]
 fn token_metadata(token_id: Nat) -> Option<TokenMetadata> {
-    TOKENS.with(|tokens| {
-        tokens.borrow().get(&token_id).map(|t| t.metadata.clone())
-    })
+    let id: u64 = token_id.0.try_into().ok()?;
+    TOKENS.with(|t| t.borrow().get(&id).map(|info| info.metadata.clone()))
 }
 
-/// Get full token info
 #[query]
 fn get_token_info(token_id: Nat) -> Option<TokenInfo> {
-    TOKENS.with(|tokens| tokens.borrow().get(&token_id).cloned())
+    let id: u64 = token_id.0.try_into().ok()?;
+    TOKENS.with(|t| t.borrow().get(&id).map(|x| x.clone()))
 }
 
-/// Get all tokens owned by address
 #[query]
 fn tokens_of(owner: Principal) -> Vec<Nat> {
-    OWNER_TOKENS.with(|owner_tokens| {
-        owner_tokens.borrow().get(&owner).unwrap_or_default()
-    })
+    owner_token_ids(owner)
 }
 
-/// Get total supply
 #[query]
 fn total_supply() -> Nat {
-    TOKEN_COUNTER.with(|counter| counter.borrow().get().clone())
+    TOKEN_COUNTER.with(|c| Nat::from(*c.borrow().get()))
 }
 
-/// Get all tokens (paginated)
 #[query]
 fn get_all_tokens(start: usize, limit: usize) -> Vec<TokenInfo> {
-    TOKENS.with(|tokens| {
-        tokens.borrow()
+    TOKENS.with(|t| {
+        t.borrow()
             .iter()
             .skip(start)
             .take(limit)
-            .map(|(_, token)| token.clone())
+            .map(|(_, info)| info.clone())
             .collect()
     })
 }
 
-// Sale Functions
+#[query]
+fn get_collection_info() -> CollectionInfo {
+    CollectionInfo {
+        name: "ARLI Agent NFTs".to_string(),
+        symbol: "ARLI".to_string(),
+        description: "Trained AI agents as transferable NFTs with proven experience and revenue history".to_string(),
+        total_supply: total_supply(),
+        logo: "https://arli.io/logo.png".to_string(),
+    }
+}
+
+#[query]
+fn supported_interfaces() -> Vec<String> {
+    vec![
+        "DIP-721".to_string(),
+        "DIP-721-v2".to_string(),
+    ]
+}
+
+// ─── Sales ──────────────────────────────────────────────────────────
 
 #[update]
 fn record_sale(
@@ -336,89 +536,74 @@ fn record_sale(
     buyer: Principal,
     price: u64,
 ) -> Result<(), String> {
-    let sale = SaleRecord {
-        token_id,
-        seller,
-        buyer,
-        price,
-        timestamp: ic_cdk::api::time(),
-    };
-    
-    TOKENS.with(|tokens| {
-        if let Some(token) = tokens.borrow().get(&sale.token_id) {
-            SALE_HISTORY.with(|history| {
-                let mut history = history.borrow_mut();
-                let agent_history = history.get(&token.agent_id).unwrap_or_default();
-                let mut new_history = agent_history.clone();
-                new_history.push(sale);
-                history.insert(token.agent_id, new_history);
-            });
-        }
-    });
-    
+    // Only admins can record sales (called by marketplace canister or backend)
+    assert_admin()?;
+
+    let id: u64 = token_id.0.clone().try_into().map_err(|_| "Invalid token_id")?;
+    let agent_id = TOKENS.with(|t| t.borrow().get(&id).map(|info| info.agent_id.clone()));
+
+    if let Some(agent_id) = agent_id {
+        let mut history = get_sale_records(&agent_id);
+        history.push(SaleRecord {
+            token_id,
+            seller,
+            buyer,
+            price,
+            timestamp: ic_cdk::api::time(),
+        });
+        set_sale_records(&agent_id, history);
+    }
+
     Ok(())
 }
 
 #[query]
 fn get_sale_history(agent_id: String) -> Vec<SaleRecord> {
-    SALE_HISTORY.with(|history| {
-        history.borrow().get(&agent_id).unwrap_or_default()
+    get_sale_records(&agent_id)
+}
+
+// ─── Admin ──────────────────────────────────────────────────────────
+
+#[update]
+fn add_admin(principal: Principal) -> Result<(), String> {
+    assert_admin()?;
+    ADMINS.with(|a| {
+        a.borrow_mut().insert(principal, true);
+    });
+    Ok(())
+}
+
+#[update]
+fn remove_admin(principal: Principal) -> Result<(), String> {
+    assert_admin()?;
+    let caller = ic_cdk::caller();
+    if principal == caller {
+        return Err("Cannot remove yourself".to_string());
+    }
+    ADMINS.with(|a| {
+        a.borrow_mut().remove(&principal);
+    });
+    Ok(())
+}
+
+#[query]
+fn get_admins() -> Vec<Principal> {
+    ADMINS.with(|a| {
+        a.borrow()
+            .iter()
+            .filter(|(_, v)| *v)
+            .map(|(k, _)| k)
+            .collect()
     })
 }
 
-// Helper functions
-
-fn is_approved_or_owner(caller: Principal, owner: Principal, token_id: Nat) -> bool {
-    if caller == owner {
-        return true;
-    }
-    
-    // Check token approval
-    let token_approved = APPROVALS.with(|approvals| {
-        approvals.borrow().get(&token_id) == Some(caller)
-    });
-    
-    if token_approved {
-        return true;
-    }
-    
-    // Check operator approval
-    is_approved_for_all(owner, caller)
-}
-
-fn update_owner_tokens(from: Principal, to: Principal, token_id: Nat) {
-    OWNER_TOKENS.with(|owner_tokens| {
-        let mut owner_tokens = owner_tokens.borrow_mut();
-        
-        // Remove from old owner
-        if let Some(mut tokens) = owner_tokens.get(&from) {
-            tokens.retain(|t| t != &token_id);
-            owner_tokens.insert(from, tokens);
-        }
-        
-        // Add to new owner
-        let mut to_tokens = owner_tokens.get(&to).unwrap_or_default();
-        to_tokens.push(token_id);
-        owner_tokens.insert(to, to_tokens);
-    });
-}
-
-// Metadata for OpenSea/ICRC-7 compatibility
+// ─── Events ─────────────────────────────────────────────────────────
 
 #[query]
-fn name() -> String {
-    "ARLI Agent NFTs".to_string()
+fn get_events() -> Vec<Event> {
+    EVENTS.with(|ev| ev.borrow().clone())
 }
 
-#[query]
-fn symbol() -> String {
-    "ARLI".to_string()
-}
+// ─── Candid export ──────────────────────────────────────────────────
 
-#[query]
-fn description() -> String {
-    "Trained AI agents as transferable NFTs with proven experience and revenue history".to_string()
-}
-
-// Export Candid
 ic_cdk::export_candid!();
