@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Play, Loader2, CheckCircle, XCircle, Activity, Zap, Queue, History } from "lucide-react";
+import { Play, Loader2, CheckCircle, XCircle, Activity, Zap, List, History } from "lucide-react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -92,7 +92,7 @@ export default function LiveTasks() {
       case "running":
         return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
       default:
-        return <Queue className="w-4 h-4 text-gray-400" />;
+        return <List className="w-4 h-4 text-gray-400" />;
     }
   };
 
@@ -109,7 +109,7 @@ export default function LiveTasks() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <StatCard icon={<Queue className="w-4 h-4" />} label="Queued" value={queueStatus.queued} />
+          <StatCard icon={<List className="w-4 h-4" />} label="Queued" value={queueStatus.queued} />
           <StatCard icon={<Activity className="w-4 h-4" />} label="Running" value={queueStatus.running} />
           <StatCard icon={<CheckCircle className="w-4 h-4" />} label="Completed" value={queueStatus.completed} />
         </div>

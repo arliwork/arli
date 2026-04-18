@@ -34,11 +34,11 @@ export default function OrgChart() {
       const data = await res.json();
       // Build tree structure
       const all = data.items || [];
-      const byId = new Map(all.map((a: AgentNode) => [a.agent_id, { ...a, subordinates: [] }]));
+      const byId = new Map<string, AgentNode>(all.map((a: AgentNode) => [a.agent_id, { ...a, subordinates: [] }]));
       const roots: AgentNode[] = [];
-      byId.forEach((agent: AgentNode) => {
+      byId.forEach((agent) => {
         if (agent.manager_id && byId.has(agent.manager_id)) {
-          byId.get(agent.manager_id).subordinates.push(agent);
+          byId.get(agent.manager_id)!.subordinates!.push(agent);
         } else {
           roots.push(agent);
         }

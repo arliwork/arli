@@ -33,6 +33,10 @@ celery_app.conf.update(
             "task": "worker.run_scheduled_workflows",
             "schedule": 60.0,  # Check every minute
         },
+        "run-agent-heartbeats": {
+            "task": "worker.run_agent_heartbeats",
+            "schedule": 300.0,  # Every 5 minutes
+        },
     },
 )
 
@@ -343,3 +347,20 @@ def run_scheduled_workflows():
         db.commit()
     finally:
         db.close()
+
+@celery_app.task
+def run_agent_heartbeats():
+    """Run heartbeat cycle for all active agents every 5 minutes."""
+    import asyncio
+    from services.heartbeat_scheduler import run_all_heartbeats
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        result = loop.run_until_complete(run_all_heartbeats())
+        print(f"[Heartbeat] Processed {result['agents_processed']} agents at {result['run_at']}")
+    except Exception as e:
+        print(f"[Heartbeat] Error: {e}")
+    finally:
+        loop.close()
