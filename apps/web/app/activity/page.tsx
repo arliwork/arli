@@ -13,7 +13,7 @@ interface LogEntry {
   event_type: string;
   event_description: string;
   created_at: string;
-  metadata: any;
+  event_metadata: any;
 }
 
 export default function ActivityPage() {

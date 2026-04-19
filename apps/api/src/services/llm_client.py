@@ -146,12 +146,38 @@ class LLMClient:
         agent_id: Optional[str] = None,
         db = None,
     ) -> LLMResponse:
+        # Check if any provider is available (unique providers only)
+        seen = set()
+        any_available = False
+        for cfg in MODEL_REGISTRY.values():
+            prov = cfg["provider"]
+            if prov in seen:
+                continue
+            seen.add(prov)
+            if prov == "ollama":
+                # Skip ollama in pre-check; handled separately
+                continue
+            if self._provider_available(prov):
+                any_available = True
+                break
+        if not any_available:
+            response = self._call_dummy(messages, task_type)
+            return LLMResponse(
+                content=response["content"],
+                model="demo",
+                provider="demo",
+                credits_used=0,
+                tokens_prompt=self._estimate_tokens(json.dumps(messages)),
+                tokens_completion=self._estimate_tokens(response["content"]),
+                raw_response=response.get("raw"),
+            )
+
         resolved = self.resolve_model(task_type, model)
         info = MODEL_REGISTRY.get(resolved, {"provider": "openrouter", "credit_multiplier": 1.0})
         provider = info["provider"]
 
         prompt_text = json.dumps(messages)
-        prompt_tokens = self._estimate_tokens(prompt_text)
+        prompt_tokens=self._estimate_tokens(prompt_text)
 
         if provider == "openai":
             response = await self._call_openai(resolved, messages, temperature, max_tokens, tools)
@@ -164,7 +190,7 @@ class LLMClient:
         else:
             response = await self._call_openrouter(resolved, messages, temperature, max_tokens, tools)
 
-        completion_tokens = self._estimate_tokens(response["content"])
+        completion_tokens=self._estimate_tokens(response["content"])
         credits = self._calculate_credits(resolved, prompt_tokens, completion_tokens)
 
         # Track per-agent cost if db and agent_id provided

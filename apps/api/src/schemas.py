@@ -255,7 +255,7 @@ class ActivityLogCreate(BaseModel):
     actor_name: str
     event_type: str
     event_description: str
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    event_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
 class ActivityLogOut(BaseModel):
     id: str
@@ -265,7 +265,7 @@ class ActivityLogOut(BaseModel):
     actor_name: Optional[str]
     event_type: str
     event_description: str
-    metadata: Dict[str, Any]
+    event_metadata: Dict[str, Any]
     created_at: datetime
 
     class Config:
