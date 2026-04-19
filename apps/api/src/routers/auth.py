@@ -55,7 +55,7 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_async_db)):
 @router.post("/ii/init", summary="Internet Identity login/register", response_description="JWT token for II user")
 async def ii_init(data: IILogin, db: AsyncSession = Depends(get_async_db)):
     """Login or register via Internet Identity principal.
-    If principal exists — returns existing user. If not — creates new user without email/password."""
+    If principal exists — returns existing user. If not — creates new user."""
     result = await db.execute(select(User).where(User.principal == data.principal))
     user = result.scalar_one_or_none()
     
