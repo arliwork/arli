@@ -34,6 +34,14 @@ export default function LoginPage() {
         throw new Error(data.detail || "Auth failed");
       }
       // Cookie set by server (httpOnly)
+      if (!isLogin) {
+        // Seed welcome data for new users
+        try {
+          await fetch(`${API_URL}/seed/welcome`, { method: "POST", credentials: "include" });
+        } catch {
+          // Non-critical if seed fails
+        }
+      }
       toast.success(isLogin ? "Welcome back!" : "Account created!");
       router.push("/dashboard");
     } catch (err: any) {
