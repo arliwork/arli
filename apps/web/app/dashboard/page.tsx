@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useDashboardWebSocket } from "../hooks/useDashboardWebSocket";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -39,10 +40,23 @@ export default function Dashboard() {
     completedTasks: 0,
     totalMarketValue: 0,
   });
+  const { isConnected, liveStats } = useDashboardWebSocket();
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (liveStats) {
+      setStats((prev) => ({
+        ...prev,
+        totalRevenue: Math.round(liveStats.total_revenue || 0),
+        activeAgents: liveStats.active_agents || 0,
+        completedTasks: liveStats.total_tasks || 0,
+        totalMarketValue: Math.round(liveStats.total_market_value || 0),
+      }));
+    }
+  }, [liveStats]);
 
   const fetchData = async () => {
     try {
