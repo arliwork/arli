@@ -10,7 +10,7 @@ from schemas import PlatformStats
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
-@router.get("", response_model=PlatformStats)
+@router.get("", response_model=PlatformStats, summary="Platform statistics", response_description="Total agents, revenue, tasks, users")
 async def get_stats(db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_active_user)):
     agents_result = await db.execute(select(func.count(Agent.id)))
     total_agents = agents_result.scalar() or 0

@@ -21,7 +21,7 @@ def _set_cookie(response: JSONResponse, token: str) -> JSONResponse:
     )
     return response
 
-@router.post("/register")
+@router.post("/register", summary="Register new user", response_description="User created with JWT token")
 async def register(data: UserRegister, db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(select(User).where(User.email == data.email))
     if result.scalar_one_or_none():
@@ -40,7 +40,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_async_db))
     resp = JSONResponse(content=payload)
     return _set_cookie(resp, token)
 
-@router.post("/login")
+@router.post("/login", summary="User login", response_description="JWT token in cookie + response body")
 async def login(data: UserLogin, db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()

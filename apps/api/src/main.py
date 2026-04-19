@@ -1,5 +1,7 @@
 """ARLI Production FastAPI Backend"""
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -38,6 +40,9 @@ async def health():
     return {"status": "healthy", "version": "2.0.0"}
 
 # Include routers
+import os
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+
 app.include_router(auth.router)
 app.include_router(agents.router)
 app.include_router(tasks.router)
@@ -60,3 +65,8 @@ app.include_router(autonomous.router)
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui():
+    with open("static/swagger.html") as f:
+        return HTMLResponse(content=f.read())
