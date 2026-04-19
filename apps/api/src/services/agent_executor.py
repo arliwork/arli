@@ -135,7 +135,7 @@ Based on your context, decide your next action. Respond with a JSON object:
                     {"role": "user", "content": prompt},
                 ],
                 task_type="reasoning",
-                max_tokens=1500,
+                max_tokens=2000,
                 agent_id=agent.agent_id,
                 db=self.db,
             )
@@ -191,7 +191,7 @@ Based on your context, decide your next action. Respond with a JSON object:
                     {"role": "user", "content": prompt},
                 ],
                 task_type="default",
-                max_tokens=4000,
+                max_tokens=2000,
                 agent_id=agent.agent_id,
                 db=self.db,
             )

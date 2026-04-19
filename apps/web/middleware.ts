@@ -16,6 +16,7 @@ export function middleware(request: NextRequest) {
     "/wallet",
     "/tasks",
     "/workspace",
+    "/demo",
   ];
 
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));

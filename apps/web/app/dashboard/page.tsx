@@ -233,7 +233,7 @@ function DemoPanel({ onRefresh }: { onRefresh: () => void }) {
     }
     setRunning(true);
     try {
-      const res = await fetch(`${API_URL}/autonomous/demo/create-company?goal=${encodeURIComponent(goal)}`, { method: "POST" });
+      const res = await fetch(`${API_URL}/autonomous/demo/create-company?goal=${encodeURIComponent(goal)}`, { method: "POST", credentials: "include" });
       const data = await res.json();
       setCreatedCompany(data);
       toast.success(data.message || "Company created!");
@@ -248,7 +248,7 @@ function DemoPanel({ onRefresh }: { onRefresh: () => void }) {
   const runCycle = async () => {
     setRunning(true);
     try {
-      const res = await fetch(`${API_URL}/autonomous/demo/run-cycle`, { method: "POST" });
+      const res = await fetch(`${API_URL}/autonomous/demo/run-cycle`, { method: "POST", credentials: "include" });
       const data = await res.json();
       setLastResult(data);
       toast.success(`Heartbeat: ${data.agents_processed} agents processed`);
