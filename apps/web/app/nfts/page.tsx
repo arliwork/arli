@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import { Link as LinkIcon, Search, Filter, Hexagon, TrendingUp, Eye } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface NftToken {
-  token_id: string;
-  owner: string;
   agent_id: string;
   name: string;
   description: string;
@@ -16,8 +15,9 @@ interface NftToken {
   level: number;
   tier: string;
   market_value: number;
-  minted_at: string;
-  attributes: { trait_type: string; value: string }[];
+  nft_token_id: string | null;
+  status: string;
+  role: string;
 }
 
 export default function NftGallery() {
@@ -29,81 +29,23 @@ export default function NftGallery() {
 
   useEffect(() => {
     fetchNfts();
-    fetchStats();
   }, []);
 
   const fetchNfts = async () => {
     try {
-      // TODO: Replace with real API call to agent_nft canister via backend
-      // const res = await fetch(`${API_URL}/nfts`);
-      // const data = await res.json();
-      // setTokens(data.items || []);
-
-      // Mock data for UI development
-      const mock: NftToken[] = [
-        {
-          token_id: "1",
-          owner: "aaaaa-aa",
-          agent_id: "agent-001",
-          name: "Alpha Trader",
-          description: "Expert trading agent with 95% success rate on crypto pairs",
-          image: "https://api.dicebear.com/7.x/bottts/svg?seed=alpha",
-          level: 12,
-          tier: "EXPERT",
-          market_value: 2500,
-          minted_at: "2026-04-01",
-          attributes: [
-            { trait_type: "Domain", value: "Trading" },
-            { trait_type: "Success Rate", value: "95%" },
-            { trait_type: "Tasks Completed", value: "340" },
-          ],
-        },
-        {
-          token_id: "2",
-          owner: "aaaaa-aa",
-          agent_id: "agent-002",
-          name: "Code Weaver",
-          description: "Full-stack development agent specializing in React and Rust",
-          image: "https://api.dicebear.com/7.x/bottts/svg?seed=weaver",
-          level: 8,
-          tier: "JOURNEYMAN",
-          market_value: 800,
-          minted_at: "2026-04-05",
-          attributes: [
-            { trait_type: "Domain", value: "Development" },
-            { trait_type: "Languages", value: "React, Rust" },
-            { trait_type: "Tasks Completed", value: "120" },
-          ],
-        },
-        {
-          token_id: "3",
-          owner: "aaaaa-aa",
-          agent_id: "agent-003",
-          name: "Data Oracle",
-          description: "Data science agent with advanced analytics capabilities",
-          image: "https://api.dicebear.com/7.x/bottts/svg?seed=oracle",
-          level: 15,
-          tier: "MASTER",
-          market_value: 5000,
-          minted_at: "2026-04-08",
-          attributes: [
-            { trait_type: "Domain", value: "Data Science" },
-            { trait_type: "Framework", value: "PyTorch, Pandas" },
-            { trait_type: "Tasks Completed", value: "560" },
-          ],
-        },
-      ];
-      setTokens(mock);
+      const res = await fetch(`${API_URL}/nfts`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      const items = data.items || [];
+      setTokens(items);
+      const totalVolume = items.reduce((sum: number, t: NftToken) => sum + (t.market_value || 0), 0);
+      setStats({ total_supply: items.length, total_volume: totalVolume });
     } catch (e) {
-      console.error("Failed to fetch NFTs");
+      console.error("Failed to fetch NFTs:", e);
+      toast.error("Failed to load NFT gallery");
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchStats = async () => {
-    // TODO: real stats from canister
-    setStats({ total_supply: 3, total_volume: 8300 });
   };
 
   const getTierColor = (tier: string) => {
@@ -134,7 +76,7 @@ export default function NftGallery() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-4xl font-bold">Agent NFT Gallery</h1>
-              <p className="text-blue-200 mt-2">Collect, trade, and own proven AI agents as NFTs</p>
+              <p className="text-blue-200 mt-2">Collect, trade, and own proven AI agents as NFTs on ICP</p>
             </div>
             <Link
               href="/nfts/my"
@@ -151,7 +93,7 @@ export default function NftGallery() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard icon={<Hexagon className="w-4 h-4" />} label="Total Supply" value={stats.total_supply} />
           <StatCard icon={<TrendingUp className="w-4 h-4" />} label="Total Volume" value={`$${stats.total_volume.toLocaleString()}`} />
-          <StatCard icon={<Eye className="w-4 h-4" />} label="Floor Price" value="$800" />
+          <StatCard icon={<Eye className="w-4 h-4" />} label="Floor Price" value={`$${filtered.length > 0 ? Math.min(...filtered.map(t => t.market_value || 0)).toLocaleString() : "0"}`} />
         </div>
       </div>
 
@@ -194,18 +136,21 @@ export default function NftGallery() {
           <div className="text-center py-12 text-gray-500">
             <Hexagon className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p className="text-xl">No NFTs found</p>
-            <p className="mt-2">Be the first to mint an agent NFT!</p>
+            <p className="mt-2">Create an agent and mint it as an NFT to see it here!</p>
+            <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">
+              Go to Dashboard →
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((nft) => (
               <div
-                key={nft.token_id}
+                key={nft.agent_id}
                 className="bg-white rounded-xl shadow border hover:shadow-lg transition overflow-hidden group"
               >
                 <div className="relative aspect-square bg-gray-100 overflow-hidden">
                   <img
-                    src={nft.image}
+                    src={nft.image || `https://api.dicebear.com/7.x/bottts/svg?seed=${nft.agent_id}`}
                     alt={nft.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                   />
@@ -219,26 +164,21 @@ export default function NftGallery() {
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-lg">{nft.name}</h3>
-                    <span className="text-xs text-gray-400">#{nft.token_id}</span>
+                    <span className="text-xs text-gray-400">#{nft.agent_id.slice(-4)}</span>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">{nft.description}</p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {nft.attributes.map((attr, idx) => (
-                      <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                        {attr.trait_type}: {attr.value}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">{nft.description || `${nft.role} agent`}</p>
 
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div>
                       <p className="text-xs text-gray-500">Level {nft.level}</p>
-                      <p className="text-xl font-bold text-blue-600">${nft.market_value.toLocaleString()}</p>
+                      <p className="text-xl font-bold text-blue-600">${(nft.market_value || 0).toLocaleString()}</p>
                     </div>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-                      View Details
-                    </button>
+                    <Link
+                      href={`/workspace/${nft.agent_id}`}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                    >
+                      View Agent
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -273,7 +213,7 @@ function NavHeader() {
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm">Dashboard</Link>
           <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 text-sm">Marketplace</Link>
-          <Link href="/nfts" className="text-gray-600 hover:text-gray-900 text-sm">NFTs</Link>
+          <Link href="/nfts" className="text-blue-600 font-medium text-sm">NFTs</Link>
           <Link href="/approvals" className="text-gray-600 hover:text-gray-900 text-sm">Approvals</Link>
           <Link href="/org-chart" className="text-gray-600 hover:text-gray-900 text-sm">Org Chart</Link>
           <Link href="/activity" className="text-gray-600 hover:text-gray-900 text-sm">Activity</Link>

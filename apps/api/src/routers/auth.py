@@ -55,3 +55,26 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_async_db)):
 @router.get("/me", response_model=UserOut)
 async def me(current_user: User = Depends(get_current_active_user)):
     return UserOut.model_validate(current_user)
+
+@router.post("/principal", response_model=UserOut)
+async def update_principal(
+    principal: str,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Link ICP principal to user account"""
+    current_user.principal = principal
+    await db.commit()
+    await db.refresh(current_user)
+    return UserOut.model_validate(current_user)
+
+@router.get("/wallet/balance")
+async def wallet_balance(principal: str):
+    """Get ICP balance for a principal (calls ICP ledger via icp_integration)"""
+    try:
+        from icp_integration import icp_client
+        balance_e8s = await icp_client.check_balance(principal)
+        return {"balance_icp": balance_e8s / 100_000_000, "balance_e8s": balance_e8s}
+    except Exception as e:
+        # If ICP client is not configured, return 0 with a note
+        return {"balance_icp": 0, "balance_e8s": 0, "note": str(e)}

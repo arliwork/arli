@@ -8,8 +8,6 @@ import toast from "react-hot-toast";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface NftToken {
-  token_id: string;
-  owner: string;
   agent_id: string;
   name: string;
   description: string;
@@ -17,8 +15,11 @@ interface NftToken {
   level: number;
   tier: string;
   market_value: number;
-  minted_at: string;
-  attributes: { trait_type: string; value: string }[];
+  nft_token_id: string | null;
+  status: string;
+  role: string;
+  total_tasks: number;
+  total_revenue: number;
 }
 
 export default function MyNfts() {
@@ -34,34 +35,13 @@ export default function MyNfts() {
 
   const fetchMyNfts = async () => {
     try {
-      // TODO: Replace with real API call using connected wallet principal
-      // const principal = await getConnectedPrincipal();
-      // const res = await fetch(`${API_URL}/nfts/owner/${principal}`);
-      // const data = await res.json();
-
-      // Mock data for UI development
-      const mock: NftToken[] = [
-        {
-          token_id: "1",
-          owner: "aaaaa-aa",
-          agent_id: "agent-001",
-          name: "Alpha Trader",
-          description: "Expert trading agent with 95% success rate on crypto pairs",
-          image: "https://api.dicebear.com/7.x/bottts/svg?seed=alpha",
-          level: 12,
-          tier: "EXPERT",
-          market_value: 2500,
-          minted_at: "2026-04-01",
-          attributes: [
-            { trait_type: "Domain", value: "Trading" },
-            { trait_type: "Success Rate", value: "95%" },
-            { trait_type: "Tasks Completed", value: "340" },
-          ],
-        },
-      ];
-      setTokens(mock);
+      const res = await fetch(`${API_URL}/nfts/my`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setTokens(data.items || []);
     } catch (e) {
-      console.error("Failed to fetch my NFTs");
+      console.error("Failed to fetch my NFTs:", e);
+      toast.error("Failed to load your NFTs");
     } finally {
       setLoading(false);
     }
@@ -71,17 +51,20 @@ export default function MyNfts() {
     if (!selectedNft || !transferTo.trim()) return;
     setTransferring(true);
     try {
-      // TODO: Replace with real canister call via backend
-      // await fetch(`${API_URL}/nfts/transfer`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ token_id: selectedNft.token_id, to: transferTo }),
-      // });
-      toast.success(`NFT #${selectedNft.token_id} transfer initiated to ${transferTo}`);
+      const res = await fetch(`${API_URL}/nfts/${selectedNft.agent_id}/transfer?to_principal=${encodeURIComponent(transferTo)}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+      toast.success(`NFT transferred to ${transferTo.slice(0, 12)}...`);
       setSelectedNft(null);
       setTransferTo("");
-    } catch (e) {
-      toast.error("Transfer failed");
+      fetchMyNfts();
+    } catch (e: any) {
+      toast.error(e.message || "Transfer failed");
     } finally {
       setTransferring(false);
     }
@@ -114,7 +97,7 @@ export default function MyNfts() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-4xl font-bold">My Agent NFTs</h1>
-              <p className="text-blue-200 mt-2">Manage and transfer your agent NFT collection</p>
+              <p className="text-blue-200 mt-2">Manage and transfer your agent NFT collection on ICP</p>
             </div>
             <Link
               href="/nfts"
@@ -135,23 +118,23 @@ export default function MyNfts() {
             <Hexagon className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p className="text-xl">No NFTs in your wallet</p>
             <p className="mt-2">
-              Visit the{" "}
-              <Link href="/marketplace" className="text-blue-600 hover:underline">
-                Marketplace
+              Go to your{" "}
+              <Link href="/dashboard" className="text-blue-600 hover:underline">
+                Dashboard
               </Link>{" "}
-              to buy your first agent NFT
+              to mint your first agent NFT
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {tokens.map((nft) => (
               <div
-                key={nft.token_id}
+                key={nft.agent_id}
                 className="bg-white rounded-xl shadow border overflow-hidden flex flex-col md:flex-row"
               >
                 <div className="md:w-48 bg-gray-100 flex-shrink-0">
                   <img
-                    src={nft.image}
+                    src={nft.image || `https://api.dicebear.com/7.x/bottts/svg?seed=${nft.agent_id}`}
                     alt={nft.name}
                     className="w-full h-full object-cover min-h-[200px]"
                   />
@@ -161,7 +144,7 @@ export default function MyNfts() {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="font-bold text-lg">{nft.name}</h3>
-                      <p className="text-xs text-gray-400">Token #{nft.token_id}</p>
+                      <p className="text-xs text-gray-400">Token {nft.nft_token_id ? `#${nft.nft_token_id.slice(-6)}` : "N/A"}</p>
                     </div>
                     <span
                       className={`${getTierColor(nft.tier)} text-white text-xs px-2 py-1 rounded-full font-medium`}
@@ -170,15 +153,7 @@ export default function MyNfts() {
                     </span>
                   </div>
 
-                  <p className="text-sm text-gray-600 mb-3">{nft.description}</p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {nft.attributes.map((attr, idx) => (
-                      <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                        {attr.trait_type}: {attr.value}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-600 mb-3">{nft.description || `${nft.role} agent`}</p>
 
                   <div className="grid grid-cols-3 gap-4 mb-4 text-center">
                     <div className="bg-gray-50 rounded p-2">
@@ -186,12 +161,12 @@ export default function MyNfts() {
                       <p className="text-xs text-gray-500">Level</p>
                     </div>
                     <div className="bg-gray-50 rounded p-2">
-                      <p className="font-bold text-green-600">${nft.market_value.toLocaleString()}</p>
+                      <p className="font-bold text-green-600">${(nft.market_value || 0).toLocaleString()}</p>
                       <p className="text-xs text-gray-500">Value</p>
                     </div>
                     <div className="bg-gray-50 rounded p-2">
-                      <p className="font-bold text-purple-600">{nft.minted_at}</p>
-                      <p className="text-xs text-gray-500">Minted</p>
+                      <p className="font-bold text-purple-600">{nft.total_tasks || 0}</p>
+                      <p className="text-xs text-gray-500">Tasks</p>
                     </div>
                   </div>
 
@@ -204,21 +179,19 @@ export default function MyNfts() {
                       Transfer
                     </button>
                     <button
-                      onClick={() => copyTokenId(nft.token_id)}
+                      onClick={() => copyTokenId(nft.nft_token_id || nft.agent_id)}
                       className="px-3 py-2 border rounded-lg hover:bg-gray-50 transition"
                       title="Copy Token ID"
                     >
                       <Copy className="w-4 h-4 text-gray-600" />
                     </button>
-                    <button
-                      onClick={() =>
-                        window.open(`https://dashboard.internetcomputer.org/canister/${nft.agent_id}`, "_blank")
-                      }
-                      className="px-3 py-2 border rounded-lg hover:bg-gray-50 transition"
-                      title="View on ICP"
+                    <Link
+                      href={`/workspace/${nft.agent_id}`}
+                      className="px-3 py-2 border rounded-lg hover:bg-gray-50 transition flex items-center justify-center"
+                      title="View Agent"
                     >
                       <ExternalLink className="w-4 h-4 text-gray-600" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -239,10 +212,10 @@ export default function MyNfts() {
             </div>
 
             <div className="flex items-center gap-3 mb-6 bg-gray-50 p-3 rounded-lg">
-              <img src={selectedNft.image} alt="" className="w-12 h-12 rounded" />
+              <img src={selectedNft.image || `https://api.dicebear.com/7.x/bottts/svg?seed=${selectedNft.agent_id}`} alt="" className="w-12 h-12 rounded" />
               <div>
                 <p className="font-bold">{selectedNft.name}</p>
-                <p className="text-xs text-gray-500">Token #{selectedNft.token_id}</p>
+                <p className="text-xs text-gray-500">Token {selectedNft.nft_token_id ? `#${selectedNft.nft_token_id.slice(-6)}` : "N/A"}</p>
               </div>
             </div>
 

@@ -36,6 +36,8 @@ const WALLETS: Wallet[] = [
   }
 ]
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function WalletConnect() {
   const [isConnected, setIsConnected] = useState(false)
   const [principal, setPrincipal] = useState<string | null>(null)
@@ -44,7 +46,6 @@ export default function WalletConnect() {
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check if already connected
     const savedPrincipal = localStorage.getItem('arli_principal')
     if (savedPrincipal) {
       setPrincipal(savedPrincipal)
@@ -54,58 +55,72 @@ export default function WalletConnect() {
   }, [])
 
   const fetchBalance = async (principalId: string) => {
-    // In real implementation: call ICP ledger canister
-    // For demo: mock balance
-    setBalance(125.50)
+    try {
+      const res = await fetch(`${API_URL}/wallet/balance?principal=${encodeURIComponent(principalId)}`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(data.balance_icp || 0);
+      } else {
+        setBalance(0);
+      }
+    } catch {
+      setBalance(0);
+    }
+  }
+
+  const savePrincipalToBackend = async (principalId: string) => {
+    try {
+      await fetch(`${API_URL}/auth/principal?principal=${encodeURIComponent(principalId)}`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.error("Failed to save principal:", e);
+    }
   }
 
   const connectWallet = async (walletId: string) => {
     setSelectedWallet(walletId)
     
     try {
-      let principal = ''
+      let connectedPrincipal = ''
       
       switch (walletId) {
         case 'ii':
-          // Internet Identity
-          principal = await connectInternetIdentity()
+          connectedPrincipal = await connectInternetIdentity()
           break
         case 'plug':
-          principal = await connectPlug()
+          connectedPrincipal = await connectPlug()
           break
         case 'stoic':
-          principal = await connectStoic()
+          connectedPrincipal = await connectStoic()
           break
         case 'oisy':
-          principal = await connectOisy()
+          connectedPrincipal = await connectOisy()
           break
       }
       
-      if (principal) {
-        setPrincipal(principal)
+      if (connectedPrincipal) {
+        setPrincipal(connectedPrincipal)
         setIsConnected(true)
-        localStorage.setItem('arli_principal', principal)
+        localStorage.setItem('arli_principal', connectedPrincipal)
         localStorage.setItem('arli_wallet', walletId)
         setShowWalletModal(false)
-        fetchBalance(principal)
+        await savePrincipalToBackend(connectedPrincipal)
+        fetchBalance(connectedPrincipal)
       }
     } catch (error) {
       console.error('Connection failed:', error)
-      alert('Failed to connect wallet')
+      alert('Failed to connect wallet: ' + (error as Error).message)
     }
     
     setSelectedWallet(null)
   }
 
   const connectInternetIdentity = async (): Promise<string> => {
-    // In real implementation:
-    // const authClient = await AuthClient.create()
-    // await authClient.login({
-    //   identityProvider: 'https://identity.ic0.app',
-    // })
-    // return authClient.getIdentity().getPrincipal().toText()
-    
-    // Mock for demo
+    // Mock for demo - in production use @dfinity/auth-client
     return 'rdmx6-jaaaa-aaaaa-aaadq-cai'
   }
 
@@ -123,12 +138,10 @@ export default function WalletConnect() {
   }
 
   const connectStoic = async (): Promise<string> => {
-    // Stoic connection logic
     return '2vxsx-fae'
   }
 
   const connectOisy = async (): Promise<string> => {
-    // OISY connection logic
     return 'yhabg-5l6'
   }
 
@@ -138,25 +151,6 @@ export default function WalletConnect() {
     setBalance(0)
     localStorage.removeItem('arli_principal')
     localStorage.removeItem('arli_wallet')
-  }
-
-  const buyAgent = async (agentId: string, price: number) => {
-    if (!isConnected) {
-      alert('Please connect wallet first')
-      return
-    }
-    
-    if (balance < price) {
-      alert('Insufficient balance')
-      return
-    }
-    
-    // In real implementation: call canister to transfer ICP
-    // const result = await agentCanister.buy_agent(agentId, price)
-    
-    alert(`Buying agent ${agentId} for $${price}...`)
-    // Mock success
-    setBalance(prev => prev - price)
   }
 
   if (isConnected && principal) {
@@ -196,7 +190,7 @@ export default function WalletConnect() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">Connect Wallet</h2>
+              <h2 className="text-xl font-bold">Connect ICP Wallet</h2>
               <button 
                 onClick={() => setShowWalletModal(false)}
                 className="text-gray-400 hover:text-gray-600"

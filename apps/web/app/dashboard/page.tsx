@@ -18,6 +18,7 @@ interface Agent {
   total_tasks: number;
   total_revenue: number;
   market_value: number;
+  nft_token_id?: string | null;
 }
 
 interface Workflow {
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mintingId, setMintingId] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalRevenue: 0,
     activeAgents: 0,
@@ -61,9 +63,9 @@ export default function Dashboard() {
   const fetchData = async () => {
     try {
       const [agentsRes, workflowsRes, statsRes] = await Promise.all([
-        fetch(`${API_URL}/agents`),
-        fetch(`${API_URL}/orchestration/workflows`),
-        fetch(`${API_URL}/stats`),
+        fetch(`${API_URL}/agents`, { credentials: "include" }),
+        fetch(`${API_URL}/orchestration/workflows`, { credentials: "include" }),
+        fetch(`${API_URL}/stats`, { credentials: "include" }),
       ]);
 
       const agentsData = agentsRes.ok ? await agentsRes.json() : { items: [] };
@@ -83,6 +85,24 @@ export default function Dashboard() {
       toast.error("Failed to load dashboard");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMint = async (agentId: string) => {
+    setMintingId(agentId);
+    try {
+      const res = await fetch(`${API_URL}/agents/${agentId}/mint`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Mint failed");
+      toast.success(data.message || "Agent minted as NFT!");
+      fetchData();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to mint NFT");
+    } finally {
+      setMintingId(null);
     }
   };
 
@@ -127,9 +147,26 @@ export default function Dashboard() {
                       <p className="text-xs text-gray-500">{agent.role} • Lv.{agent.level} • {agent.status}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-900">${agent.market_value}</div>
-                    <div className="text-xs text-gray-500">{agent.total_tasks} tasks</div>
+                  <div className="text-right flex items-center gap-3">
+                    <div>
+                      <div className="font-semibold text-gray-900">${agent.market_value}</div>
+                      <div className="text-xs text-gray-500">{agent.total_tasks} tasks</div>
+                    </div>
+                    <button
+                      onClick={() => handleMint(agent.agent_id)}
+                      disabled={mintingId === agent.agent_id}
+                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${
+                        agent.nft_token_id
+                          ? "bg-green-100 text-green-700 cursor-default"
+                          : "bg-purple-100 text-purple-700 hover:bg-purple-200 disabled:opacity-50"
+                      }`}
+                    >
+                      {agent.nft_token_id
+                        ? "Minted ✓"
+                        : mintingId === agent.agent_id
+                        ? "Minting..."
+                        : "Mint NFT"}
+                    </button>
                   </div>
                 </div>
               ))}

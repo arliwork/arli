@@ -244,3 +244,53 @@ async def delete_agent(
     await db.delete(agent)
     await db.commit()
     return None
+
+@router.post("/{agent_id}/mint")
+async def mint_agent_nft(
+    agent_id: str,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Mint an existing agent as an NFT on ICP"""
+    result = await db.execute(select(Agent).where(Agent.agent_id == agent_id))
+    agent = result.scalar_one_or_none()
+    if not agent:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agent not found")
+    if agent.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    if agent.nft_token_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Agent already minted as NFT")
+    if not current_user.principal:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No ICP principal linked. Connect wallet first."
+        )
+
+    try:
+        from icp_integration import icp_client
+        token_id = await icp_client.mint_agent_nft(
+            agent_id=agent.agent_id,
+            owner_principal=current_user.principal,
+            metadata={
+                "name": agent.name,
+                "description": agent.description or "",
+                "image": f"https://api.dicebear.com/7.x/bottts/svg?seed={agent.agent_id}",
+                "level": agent.level,
+                "tier": agent.tier,
+                "market_value": int(agent.market_value),
+            }
+        )
+        agent.nft_token_id = token_id
+        await db.commit()
+        await db.refresh(agent)
+        return {
+            "success": True,
+            "token_id": token_id,
+            "agent_id": agent.agent_id,
+            "message": f"Agent '{agent.name}' minted as NFT successfully"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"NFT mint failed: {str(e)}"
+        )
