@@ -26,13 +26,14 @@ export default function LoginPage() {
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.detail || "Auth failed");
       }
-      localStorage.setItem("arli_token", data.access_token);
+      // Cookie set by server (httpOnly)
       toast.success(isLogin ? "Welcome back!" : "Account created!");
       router.push("/dashboard");
     } catch (err: any) {

@@ -1,5 +1,6 @@
 """Authentication routes"""
 from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth import get_password_hash, verify_password, create_access_token, get_current_active_user
@@ -10,7 +11,17 @@ from dependencies import get_async_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/register", response_model=TokenResponse)
+def _set_cookie(response: JSONResponse, token: str) -> JSONResponse:
+    response.set_cookie(
+        key="arli_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=604800,  # 7 days
+    )
+    return response
+
+@router.post("/register")
 async def register(data: UserRegister, db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(select(User).where(User.email == data.email))
     if result.scalar_one_or_none():
@@ -24,18 +35,22 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_async_db))
     await db.commit()
     await db.refresh(user)
     
-    token = create_access_token({"sub": user.id})
-    return TokenResponse(access_token=token, user=UserOut.model_validate(user))
+    token = create_access_token(data={"sub": str(user.id)})
+    payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump()
+    resp = JSONResponse(content=payload)
+    return _set_cookie(resp, token)
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login")
 async def login(data: UserLogin, db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
     if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
-    token = create_access_token({"sub": user.id})
-    return TokenResponse(access_token=token, user=UserOut.model_validate(user))
+    token = create_access_token(data={"sub": str(user.id)})
+    payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump()
+    resp = JSONResponse(content=payload)
+    return _set_cookie(resp, token)
 
 @router.get("/me", response_model=UserOut)
 async def me(current_user: User = Depends(get_current_active_user)):
