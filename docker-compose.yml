@@ -41,7 +41,6 @@ services:
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: arli-production-jwt-secret-change-in-production
       FRONTEND_URL: http://localhost:3000
-      APP_URL: http://localhost:8000
     ports:
       - "8000:8000"
     depends_on:
@@ -49,11 +48,39 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./apps/api/src:/app/src
-    command: >
-      sh -c "python -m alembic upgrade head &&
-             uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: arli-worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arli:arli_secret@db:5432/arli_prod
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: arli-production-jwt-secret-change-in-production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["celery", "-A", "src.celery_app", "worker", "--loglevel=info"]
+
+  beat:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: arli-beat
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arli:arli_secret@db:5432/arli_prod
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: arli-production-jwt-secret-change-in-production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["celery", "-A", "src.celery_app", "beat", "--loglevel=info"]
 
   web:
     build:
@@ -66,39 +93,6 @@ services:
       - "3000:3000"
     depends_on:
       - api
-    command: npm run start
-
-  celery-worker:
-    build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    container_name: arli-celery-worker
-    environment:
-      DATABASE_URL: postgresql+asyncpg://arli:arli_secret@db:5432/arli_prod
-      REDIS_URL: redis://redis:6379/0
-      JWT_SECRET: arli-production-jwt-secret-change-in-production
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    command: celery -A src.celery_app worker --loglevel=info
-
-  celery-beat:
-    build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    container_name: arli-celery-beat
-    environment:
-      DATABASE_URL: postgresql+asyncpg://arli:arli_secret@db:5432/arli_prod
-      REDIS_URL: redis://redis:6379/0
-      JWT_SECRET: arli-production-jwt-secret-change-in-production
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    command: celery -A src.celery_app beat --loglevel=info
 
 volumes:
   postgres_data:
