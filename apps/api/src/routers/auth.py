@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth import get_password_hash, verify_password, create_access_token, get_current_active_user
 from database import get_db
 from models import User
-from schemas import UserRegister, UserLogin, TokenResponse, UserOut, LLMConfigUpdate, LLMConfigOut
+from schemas import UserRegister, UserLogin, IILogin, TokenResponse, UserOut, LLMConfigUpdate, LLMConfigOut
 from dependencies import get_async_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -46,6 +46,24 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_async_db)):
     user = result.scalar_one_or_none()
     if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    
+    token = create_access_token(data={"sub": str(user.id)})
+    payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump(mode="json")
+    resp = JSONResponse(content=payload)
+    return _set_cookie(resp, token)
+
+@router.post("/ii/init", summary="Internet Identity login/register", response_description="JWT token for II user")
+async def ii_init(data: IILogin, db: AsyncSession = Depends(get_async_db)):
+    """Login or register via Internet Identity principal.
+    If principal exists — returns existing user. If not — creates new user without email/password."""
+    result = await db.execute(select(User).where(User.principal == data.principal))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        user = User(principal=data.principal, is_active=True)
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
     
     token = create_access_token(data={"sub": str(user.id)})
     payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump(mode="json")

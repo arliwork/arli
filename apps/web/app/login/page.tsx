@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { loginWithII } from "../lib/icp-auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [iiLoading, setIILoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +50,25 @@ export default function LoginPage() {
       toast.error(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleIILogin = async () => {
+    setIILoading(true);
+    try {
+      await loginWithII();
+      // Seed welcome data for new II users
+      try {
+        await fetch(`${API_URL}/seed/welcome`, { method: "POST", credentials: "include" });
+      } catch {
+        // Non-critical if seed fails
+      }
+      toast.success("Authenticated with Internet Identity");
+      router.push("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Internet Identity login failed");
+    } finally {
+      setIILoading(false);
     }
   };
 
@@ -97,6 +118,32 @@ export default function LoginPage() {
               {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
             </button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-900/50 text-gray-400">or continue with</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleIILogin}
+            disabled={iiLoading}
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition disabled:opacity-50 shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2"
+          >
+            {iiLoading ? (
+              "Connecting..."
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Internet Identity
+              </>
+            )}
+          </button>
 
           <div className="mt-6 text-center">
             <button

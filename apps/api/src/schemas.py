@@ -13,14 +13,20 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class IILogin(BaseModel):
+    principal: str = Field(..., min_length=20, description="Internet Identity principal string")
+
 class UserOut(BaseModel):
     id: str
-    email: str
+    email: Optional[str] = None
     principal: Optional[str] = None
     wallet_address: Optional[str] = None
     llm_provider: Optional[str] = None
     llm_model: Optional[str] = None
     created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class LLMConfigUpdate(BaseModel):
     provider: str = Field(..., description="LLM provider: openai, anthropic, openrouter, kimi, ollama")

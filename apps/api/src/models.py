@@ -30,8 +30,8 @@ class User(Base):
     __tablename__ = "users"
     
     id = Column(String, primary_key=True, default=generate_uuid)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    hashed_password = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=True, index=True)
+    hashed_password = Column(String(255), nullable=True)
     principal = Column(String(255), unique=True, nullable=True)
     wallet_address = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
