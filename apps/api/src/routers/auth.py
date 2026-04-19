@@ -36,7 +36,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_async_db))
     await db.refresh(user)
     
     token = create_access_token(data={"sub": str(user.id)})
-    payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump()
+    payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump(mode="json")
     resp = JSONResponse(content=payload)
     return _set_cookie(resp, token)
 
@@ -48,7 +48,7 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_async_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
     token = create_access_token(data={"sub": str(user.id)})
-    payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump()
+    payload = TokenResponse(access_token=token, user=UserOut.model_validate(user)).model_dump(mode="json")
     resp = JSONResponse(content=payload)
     return _set_cookie(resp, token)
 
