@@ -145,7 +145,41 @@ class LLMClient:
         tools: Optional[List[Dict]] = None,
         agent_id: Optional[str] = None,
         db = None,
+        user_settings: Optional[Dict[str, Any]] = None,
     ) -> LLMResponse:
+        # If user has custom LLM settings, use them
+        if user_settings and user_settings.get("llm_provider"):
+            provider = user_settings["llm_provider"]
+            api_key = user_settings.get("llm_api_key", "")
+            base_url = user_settings.get("llm_base_url")
+            user_model = user_settings.get("llm_model")
+            resolved = user_model or model or DEFAULT_MODELS.get(task_type, DEFAULT_MODELS["default"])
+            prompt_text = json.dumps(messages)
+            prompt_tokens = self._estimate_tokens(prompt_text)
+
+            if provider == "openai":
+                response = await self._call_openai_user(resolved, messages, temperature, max_tokens, tools, api_key, base_url)
+            elif provider == "anthropic":
+                response = await self._call_anthropic_user(resolved, messages, temperature, max_tokens, tools, api_key, base_url)
+            elif provider == "kimi":
+                response = await self._call_kimi_user(resolved, messages, temperature, max_tokens, tools, api_key, base_url)
+            elif provider == "ollama":
+                response = await self._call_ollama_user(resolved, messages, temperature, max_tokens, base_url)
+            else:
+                response = await self._call_openrouter_user(resolved, messages, temperature, max_tokens, tools, api_key, base_url)
+
+            completion_tokens = self._estimate_tokens(response["content"])
+            credits = self._calculate_credits(resolved, prompt_tokens, completion_tokens)
+            return LLMResponse(
+                content=response["content"],
+                model=resolved,
+                provider=provider,
+                credits_used=credits,
+                tokens_prompt=prompt_tokens,
+                tokens_completion=completion_tokens,
+                raw_response=response.get("raw"),
+            )
+
         # Check if any provider is available (unique providers only)
         seen = set()
         any_available = False
@@ -155,7 +189,6 @@ class LLMClient:
                 continue
             seen.add(prov)
             if prov == "ollama":
-                # Skip ollama in pre-check; handled separately
                 continue
             if self._provider_available(prov):
                 any_available = True
@@ -177,7 +210,7 @@ class LLMClient:
         provider = info["provider"]
 
         prompt_text = json.dumps(messages)
-        prompt_tokens=self._estimate_tokens(prompt_text)
+        prompt_tokens = self._estimate_tokens(prompt_text)
 
         if provider == "openai":
             response = await self._call_openai(resolved, messages, temperature, max_tokens, tools)
@@ -190,7 +223,7 @@ class LLMClient:
         else:
             response = await self._call_openrouter(resolved, messages, temperature, max_tokens, tools)
 
-        completion_tokens=self._estimate_tokens(response["content"])
+        completion_tokens = self._estimate_tokens(response["content"])
         credits = self._calculate_credits(resolved, prompt_tokens, completion_tokens)
 
         # Track per-agent cost if db and agent_id provided
@@ -205,7 +238,6 @@ class LLMClient:
                     agent.llm_cost_usd += credits
                     agent.budget_spent += credits
                     await db.commit()
-                    # Auto-pause if budget exceeded
                     if agent.monthly_budget > 0 and agent.budget_spent >= agent.monthly_budget:
                         agent.status = "paused"
                         await db.commit()
@@ -418,6 +450,81 @@ class LLMClient:
                 "content": f"# Agent Response (DEMO MODE)\n\nTask received: {last_msg[:120]}\n\nThis is a simulated response because no LLM API keys are configured. To enable real AI generation, set one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, or OLLAMA_URL.",
                 "raw": {"dummy": True, "task_type": task_type},
             }
+
+    # --- User-specific API calls (with custom API keys) ---
+    async def _call_openai_user(self, model, messages, temperature, max_tokens, tools, api_key, base_url=None):
+        session = await self._get_session()
+        payload = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+        if tools:
+            payload["tools"] = tools
+        url = f"{base_url}/v1/chat/completions" if base_url else "https://api.openai.com/v1/chat/completions"
+        async with session.post(url, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, json=payload) as resp:
+            data = await resp.json()
+            if resp.status != 200:
+                raise RuntimeError(f"OpenAI error: {data}")
+            return {"content": data["choices"][0]["message"]["content"], "raw": data}
+
+    async def _call_anthropic_user(self, model, messages, temperature, max_tokens, tools, api_key, base_url=None):
+        session = await self._get_session()
+        system_msg, chat_messages = "", []
+        for m in messages:
+            if m["role"] == "system":
+                system_msg = m["content"]
+            else:
+                chat_messages.append(m)
+        payload = {"model": model, "messages": chat_messages, "max_tokens": max_tokens, "temperature": temperature}
+        if system_msg:
+            payload["system"] = system_msg
+        if tools:
+            payload["tools"] = tools
+        url = f"{base_url}/v1/messages" if base_url else "https://api.anthropic.com/v1/messages"
+        async with session.post(url, headers={"x-api-key": api_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"}, json=payload) as resp:
+            data = await resp.json()
+            if resp.status != 200:
+                raise RuntimeError(f"Anthropic error: {data}")
+            return {"content": data["content"][0]["text"], "raw": data}
+
+    async def _call_kimi_user(self, model, messages, temperature, max_tokens, tools, api_key, base_url=None):
+        session = await self._get_session()
+        system_msg, chat_messages = "", []
+        for m in messages:
+            if m["role"] == "system":
+                system_msg = m["content"]
+            else:
+                chat_messages.append(m)
+        payload = {"model": model, "messages": chat_messages, "max_tokens": max_tokens, "temperature": temperature}
+        if system_msg:
+            payload["system"] = system_msg
+        if tools:
+            payload["tools"] = tools
+        url = f"{base_url}/v1/messages" if base_url else "https://api.kimi.com/coding/v1/messages"
+        async with session.post(url, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, json=payload) as resp:
+            data = await resp.json()
+            if resp.status != 200:
+                raise RuntimeError(f"Kimi error: {data}")
+            return {"content": data["content"][0]["text"], "raw": data}
+
+    async def _call_openrouter_user(self, model, messages, temperature, max_tokens, tools, api_key, base_url=None):
+        session = await self._get_session()
+        payload = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+        if tools:
+            payload["tools"] = tools
+        url = f"{base_url}/api/v1/chat/completions" if base_url else "https://openrouter.ai/api/v1/chat/completions"
+        async with session.post(url, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json", "HTTP-Referer": "https://arli.ai", "X-Title": "ARLI"}, json=payload) as resp:
+            data = await resp.json()
+            if resp.status != 200:
+                raise RuntimeError(f"OpenRouter error: {data}")
+            return {"content": data["choices"][0]["message"]["content"], "raw": data}
+
+    async def _call_ollama_user(self, model, messages, temperature, max_tokens, base_url=None):
+        session = await self._get_session()
+        url = f"{base_url}/api/chat" if base_url else f"{self.ollama_url}/api/chat"
+        payload = {"model": model, "messages": messages, "stream": False, "options": {"temperature": temperature, "num_predict": max_tokens}}
+        async with session.post(url, headers={"Content-Type": "application/json"}, json=payload) as resp:
+            data = await resp.json()
+            if resp.status != 200:
+                raise RuntimeError(f"Ollama error: {data}")
+            return {"content": data["message"]["content"], "raw": data}
 
     async def close(self):
         if self.session and not self.session.closed:

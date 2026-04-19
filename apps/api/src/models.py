@@ -39,6 +39,11 @@ class User(Base):
     credits_balance = Column(Numeric(18, 4), default=500)  # Free tier starts with 500
     credits_spent = Column(Numeric(18, 4), default=0)
     subscription_tier = Column(String(50), default="free")  # free, plus, pro, enterprise
+    # LLM Provider configuration (per-user)
+    llm_provider = Column(String(50), nullable=True)  # openai, anthropic, openrouter, kimi, ollama
+    llm_api_key = Column(Text, nullable=True)  # User's own API key
+    llm_base_url = Column(String(500), nullable=True)  # Custom base URL (e.g. for Ollama or proxies)
+    llm_model = Column(String(100), nullable=True)  # Preferred model
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     

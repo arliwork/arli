@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth import get_password_hash, verify_password, create_access_token, get_current_active_user
 from database import get_db
 from models import User
-from schemas import UserRegister, UserLogin, TokenResponse, UserOut
+from schemas import UserRegister, UserLogin, TokenResponse, UserOut, LLMConfigUpdate, LLMConfigOut
 from dependencies import get_async_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -78,3 +78,41 @@ async def wallet_balance(principal: str):
     except Exception as e:
         # If ICP client is not configured, return 0 with a note
         return {"balance_icp": 0, "balance_e8s": 0, "note": str(e)}
+
+@router.get("/me/llm-config", response_model=LLMConfigOut)
+async def get_llm_config(current_user: User = Depends(get_current_active_user)):
+    """Get current user's LLM provider configuration (api_key is NOT returned for security)"""
+    return LLMConfigOut(
+        provider=current_user.llm_provider or "kimi",
+        model=current_user.llm_model,
+        base_url=current_user.llm_base_url,
+    )
+
+@router.post("/me/llm-config", response_model=UserOut)
+async def update_llm_config(
+    data: LLMConfigUpdate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Update current user's LLM provider configuration"""
+    current_user.llm_provider = data.provider
+    current_user.llm_api_key = data.api_key
+    current_user.llm_base_url = data.base_url or None
+    current_user.llm_model = data.model or None
+    await db.commit()
+    await db.refresh(current_user)
+    return UserOut.model_validate(current_user)
+
+@router.delete("/me/llm-config")
+async def delete_llm_config(
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Clear user's LLM config (fallback to system defaults)"""
+    current_user.llm_provider = None
+    current_user.llm_api_key = None
+    current_user.llm_base_url = None
+    current_user.llm_model = None
+    await db.commit()
+    await db.refresh(current_user)
+    return {"success": True, "message": "LLM config cleared"}

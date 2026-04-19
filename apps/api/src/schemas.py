@@ -18,7 +18,28 @@ class UserOut(BaseModel):
     email: str
     principal: Optional[str] = None
     wallet_address: Optional[str] = None
+    llm_provider: Optional[str] = None
+    llm_model: Optional[str] = None
     created_at: datetime
+
+class LLMConfigUpdate(BaseModel):
+    provider: str = Field(..., description="LLM provider: openai, anthropic, openrouter, kimi, ollama")
+    api_key: str = Field(..., min_length=1, description="API key for the provider")
+    base_url: Optional[str] = Field(None, description="Custom base URL (optional)")
+    model: Optional[str] = Field(None, description="Preferred model (optional)")
+
+class LLMConfigOut(BaseModel):
+    provider: str
+    model: Optional[str] = None
+    base_url: Optional[str] = None
+    available_providers: list[str] = ["openai", "anthropic", "openrouter", "kimi", "ollama"]
+    available_models: dict[str, list[str]] = {
+        "openai": ["gpt-4o", "gpt-4o-mini", "o3-mini"],
+        "anthropic": ["claude-3-5-sonnet-20241022", "claude-3-opus-20240229"],
+        "openrouter": ["deepseek/deepseek-chat", "qwen/qwen3-8b", "google/gemini-2.0-flash-001"],
+        "kimi": ["kimi-k2", "kimi-k1.6"],
+        "ollama": ["llama3.1", "codellama", "deepseek-coder"],
+    }
     
     class Config:
         from_attributes = True
