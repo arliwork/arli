@@ -17,7 +17,7 @@ def _set_cookie(response: JSONResponse, token: str) -> JSONResponse:
         value=token,
         httponly=True,
         samesite="lax",
-        max_age=604800,  # 7 days
+        max_age=604800,
     )
     return response
 
