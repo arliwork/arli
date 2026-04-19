@@ -109,8 +109,8 @@ export default function ActivityPage() {
                       <span className="text-xs text-gray-400">{log.actor_name || log.actor_type}</span>
                     </div>
                     <p className="text-sm text-gray-700">{log.event_description}</p>
-                    {log.metadata && Object.keys(log.metadata).length > 0 && (
-                      <p className="text-xs text-gray-400 mt-1 font-mono truncate">{JSON.stringify(log.metadata)}</p>
+                    {log.event_metadata && Object.keys(log.event_metadata).length > 0 && (
+                      <p className="text-xs text-gray-400 mt-1 font-mono truncate">{JSON.stringify(log.event_metadata)}</p>
                     )}
                   </div>
                   <span className="text-xs text-gray-400 whitespace-nowrap flex items-center gap-1">
