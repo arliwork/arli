@@ -3,6 +3,8 @@ from fastapi import APIRouter, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import get_async_db
+from auth import get_current_active_user
+from models import User
 from services.telegram_service import TelegramService
 from services.discord_service import DiscordService
 

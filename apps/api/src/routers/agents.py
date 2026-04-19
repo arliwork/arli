@@ -71,6 +71,7 @@ async def list_agents(
     limit: int = Query(20, le=100),
     offset: int = 0,
     db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     stmt = select(Agent).where(Agent.level >= min_level)
     if is_listed is not None:

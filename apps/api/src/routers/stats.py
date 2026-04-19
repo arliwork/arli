@@ -3,13 +3,15 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies import get_async_db
+from auth import get_current_active_user
+from models import User
 from models import Agent, User, Task, AgentSale
 from schemas import PlatformStats
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
 @router.get("", response_model=PlatformStats)
-async def get_stats(db: AsyncSession = Depends(get_async_db)):
+async def get_stats(db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_active_user)):
     agents_result = await db.execute(select(func.count(Agent.id)))
     total_agents = agents_result.scalar() or 0
     
