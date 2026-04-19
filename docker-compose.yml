@@ -1,9 +1,105 @@
+version: "3.8"
 
 services:
-  auth:
-    image: auth-service:latest
+  db:
+    image: postgres:16-alpine
+    container_name: arli-db
     environment:
-      - JWT_SECRET=${JWT_SECRET}  # From shared knowledge
-      - TOKEN_EXPIRY=24h
+      POSTGRES_USER: arli
+      POSTGRES_PASSWORD: arli_secret
+      POSTGRES_DB: arli_prod
     ports:
-      - "8080:8080"
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arli -d arli_prod"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: arli-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: arli-api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arli:arli_secret@db:5432/arli_prod
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: arli-production-jwt-secret-change-in-production
+      FRONTEND_URL: http://localhost:3000
+      APP_URL: http://localhost:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api/src:/app/src
+    command: >
+      sh -c "python -m alembic upgrade head &&
+             uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: arli-web
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    command: npm run start
+
+  celery-worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: arli-celery-worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arli:arli_secret@db:5432/arli_prod
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: arli-production-jwt-secret-change-in-production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A src.celery_app worker --loglevel=info
+
+  celery-beat:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: arli-celery-beat
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arli:arli_secret@db:5432/arli_prod
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: arli-production-jwt-secret-change-in-production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A src.celery_app beat --loglevel=info
+
+volumes:
+  postgres_data:
+  redis_data:
