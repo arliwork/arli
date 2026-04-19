@@ -164,6 +164,7 @@ Pick 3-4 roles that best fit the goal. Available roles: ceo, cto, developer, ana
         task = Task(
             task_id=f"task_{uuid.uuid4().hex[:6]}",
             description=plan.get("initial_task", f"Create a strategy to achieve: {goal}"),
+            category="strategy",
             assigned_role="ceo",
             agent_id=ceo_agent.id,
             status="pending",
