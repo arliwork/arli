@@ -30,7 +30,7 @@ export default function OrgChart() {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch(`${API_URL}/agents`);
+      const res = await fetch(`${API_URL}/agents`, { credentials: "include" });
       const data = await res.json();
       // Build tree structure
       const all = data.items || [];

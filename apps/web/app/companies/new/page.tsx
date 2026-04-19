@@ -72,18 +72,12 @@ export default function NewCompany() {
     setLoading(true)
     
     try {
-      // TODO: Replace with actual API call
-      // await fetch('/api/companies', {
-      //   method: 'POST',
-      //   body: JSON.stringify({
-      //     ...formData,
-      //     useTemplate: selectedTemplate !== 'custom' ? selectedTemplate : undefined
-      //   })
-      // })
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      const goal = formData.description || `${formData.name} — ${selectedTemplateData?.name || "Custom company"}`;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/autonomous/demo/create-company?goal=${encodeURIComponent(goal)}`,
+        { method: "POST", credentials: "include" }
+      );
+      if (!res.ok) throw new Error("Failed to create company");
       router.push('/dashboard')
     } catch (error) {
       console.error('Failed to create company:', error)

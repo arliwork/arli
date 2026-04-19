@@ -36,7 +36,7 @@ export default function Marketplace() {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch(`${API_URL}/agents?is_listed=true`);
+      const res = await fetch(`${API_URL}/agents?is_listed=true`, { credentials: "include" });
       const data = await res.json();
       setAgents(data.items || []);
     } catch (e) {
@@ -48,7 +48,7 @@ export default function Marketplace() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_URL}/stats`);
+      const res = await fetch(`${API_URL}/stats`, { credentials: "include" });
       const data = await res.json();
       setStats(data);
     } catch (e) {

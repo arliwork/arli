@@ -43,7 +43,7 @@ export default function ApprovalsPage() {
 
   const handleApprove = async (approvalId: string) => {
     try {
-      const res = await fetch(`${API_URL}/approvals/${approvalId}/approve`, { method: "POST" });
+      const res = await fetch(`${API_URL}/approvals/${approvalId}/approve`, { method: "POST", credentials: "include" });
       if (res.ok) {
         toast.success("Approved");
         fetchApprovals();
@@ -57,6 +57,7 @@ export default function ApprovalsPage() {
     try {
       const res = await fetch(`${API_URL}/approvals/${approvalId}/reject`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: "Rejected by board" }),
       });

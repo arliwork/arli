@@ -28,7 +28,7 @@ export default function ActivityPage() {
 
   const fetchLogs = async () => {
     try {
-      const res = await fetch(`${API_URL}/activity?limit=100`);
+      const res = await fetch(`${API_URL}/activity?limit=100`, { credentials: "include" });
       const data = await res.json();
       setLogs(data.items || []);
     } catch (e) {}
@@ -36,7 +36,7 @@ export default function ActivityPage() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_URL}/activity/stats`);
+      const res = await fetch(`${API_URL}/activity/stats`, { credentials: "include" });
       const data = await res.json();
       setStats(data);
     } catch (e) {}
