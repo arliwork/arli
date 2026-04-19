@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link, Save, Trash2, Key, Globe, Cpu, CheckCircle, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { Save, Trash2, Key, Globe, Cpu, CheckCircle, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
