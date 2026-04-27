@@ -66,3 +66,4 @@ ssl/
 *.seed
 *.pid.lock
 .pgdata/
+research/framework/sources/

@@ -1,0 +1,148 @@
+# ARLI Research Framework Configuration
+# Autonomous research system for institutional prediction markets
+
+meta:
+  name: "ARLI Research Framework"
+  version: "1.0.0"
+  org: "Truth Meter Limited"
+  target_geographies: ["HK", "SG", "AE", "UK", "US"]
+  output_dir: "../data-room"
+  sources_dir: "../prediction-markets-autoresearch/sources"
+
+cycles:
+  default_depth: 3
+  max_sources_per_cycle: 50
+  claims_saturation_threshold: 0.85
+  parallel_cycles: 3
+
+domains:
+  regulatory:
+    priority: 1
+    refresh_interval_hours: 24
+    key_questions:
+      - "What is the current HK SFC position on event contracts?"
+      - "How does CFTC classify prediction markets under US law?"
+      - "What MAS licenses are required for event derivatives in Singapore?"
+      - "What is the VARA framework for virtual assets in Dubai?"
+      - "How does the HK government consultation on prediction markets conclude?"
+    trusted_sources:
+      - "sfc.hk"
+      - "mas.gov.sg"
+      - "var.ae"
+      - "cftc.gov"
+      - "info.gov.hk"
+      - "fso.gov.hk"
+      - "legco.gov.hk"
+      - "hkex.com.hk"
+    search_queries:
+      - "Hong Kong SFC event contracts derivatives regulation 2025 2026"
+      - "Singapore MAS event derivatives licensing requirements"
+      - "Dubai VARA prediction markets virtual assets regulation"
+      - "CFTC event contracts prediction markets legal framework"
+      - "HK government prediction markets consultation paper"
+
+  market_landscape:
+    priority: 2
+    refresh_interval_hours: 48
+    key_questions:
+      - "Who are the main competitors in institutional prediction markets?"
+      - "What is the market size for event-driven derivatives?"
+      - "What pricing models do expert networks use?"
+      - "What is the TAM for institutional event risk hedging?"
+    trusted_sources:
+      - "polymarket.com"
+      - "kalshi.com"
+      - "predictit.org"
+      - "alphasights.com"
+      - "glg.it"
+      - "cfte.io"
+      - "delphi-digital.io"
+      - "theblock.co"
+    search_queries:
+      - "institutional prediction market competitors 2025 2026"
+      - "event derivatives market size TAM SAM SOM"
+      - "expert network pricing AlphaSights GLG alternative"
+      - "Kalshi Polymarket institutional business model"
+      - "hedge fund event risk management tools market"
+
+  technology:
+    priority: 3
+    refresh_interval_hours: 72
+    key_questions:
+      - "What oracle solutions exist for event settlement?"
+      - "What blockchain infrastructure supports derivatives?"
+      - "What are the latency requirements for institutional trading?"
+      - "How do we prevent market manipulation?"
+    trusted_sources:
+      - "chain.link"
+      - "uma.xyz"
+      - "pyth.network"
+      - "stellar.org"
+      - " Hedera.com"
+      - "cumberlanddrw.com"
+      - "galaxy.com"
+    search_queries:
+      - "decentralized oracle event settlement blockchain"
+      - "institutional derivatives infrastructure latency requirements"
+      - "prediction market manipulation prevention mechanisms"
+      - "blockchain derivatives clearing settlement Hong Kong"
+
+  customers:
+    priority: 2
+    refresh_interval_hours: 48
+    key_questions:
+      - "What are the compliance requirements for HK hedge funds?"
+      - "How do family offices manage event risk?"
+      - "What is the procurement process for institutional data?"
+      - "Who are the economic buyers vs users?"
+    trusted_sources:
+      - "hfm.global"
+      - "familyofficehub.io"
+      - "preqin.com"
+      - "bloomberg.com"
+      - "reuters.com"
+    search_queries:
+      - "Hong Kong hedge fund compliance event risk"
+      - "family office investment decision process"
+      - "institutional data procurement budget approval"
+      - "hedge fund chief risk officer data vendors"
+
+  business_model:
+    priority: 1
+    refresh_interval_hours: 24
+    key_questions:
+      - "What is the optimal pricing for institutional event data?"
+      - "What revenue models work for B2B derivatives platforms?"
+      - "What are the unit economics of market making?"
+      - "How do we structure B2B partnerships?"
+    trusted_sources:
+      - "bloomberg.com"
+      - "reuters.com"
+      - "ft.com"
+      - "wsj.com"
+      - "mcKinsey.com"
+      - "bain.com"
+    search_queries:
+      - "B2B derivatives platform pricing model subscription"
+      - "institutional data product pricing benchmarks"
+      - "prediction market revenue unit economics"
+      - "financial data vendor partnership structure"
+
+extraction:
+  jina_fallback: true
+  firecrawl_fallback: true
+  direct_http: true
+  camoufox: true
+  playwright: true
+  max_retries: 3
+  timeout_seconds: 15
+
+reporting:
+  format: "markdown"
+  include_claims_table: true
+  include_sources_table: true
+  include_executive_summary: true
+  include_key_findings: true
+  include_gaps: true
+  max_claims: 100
+  min_confidence: 0.6
